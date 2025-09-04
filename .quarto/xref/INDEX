@@ -1,0 +1,38 @@
+{
+  "about.qmd": {
+    "about.html": "81d88292"
+  },
+  "conclusions.qmd": {
+    "conclusions.html": "5693c267"
+  },
+  "data-sources.qmd": {
+    "data-sources.html": "1490ce22"
+  },
+  "data-visualization.qmd": {
+    "data-visualization.html": "751028b0"
+  },
+  "deep-learning-ts.qmd": {
+    "deep-learning-ts.html": "5c2f381a"
+  },
+  "exploratory-data-analysis.qmd": {
+    "exploratory-data-analysis.html": "0726250e"
+  },
+  "financial-ts-models.qmd": {
+    "financial-ts-models.html": "1f027b82"
+  },
+  "index.qmd": {
+    "index.html": "2d142c37"
+  },
+  "introduction.qmd": {
+    "introduction.html": "36502b03"
+  },
+  "multivariate-ts-models.qmd": {
+    "multivariate-ts-models.html": "55490a6d"
+  },
+  "other-methods.qmd": {
+    "other-methods.html": "41460220"
+  },
+  "univariate-ts-models.qmd": {
+    "univariate-ts-models.html": "2b5ee378"
+  }
+}

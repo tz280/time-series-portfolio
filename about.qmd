@@ -1,0 +1,9 @@
+---
+title: "About Me"
+---
+
+**Hi! Glad to meet you here:)**
+
+I'm Tongrui（Neil) Zhang, currently a graduate student in Georgetown University DSAN program learning about time series. I love looking into data and learning about how it can be used to solve or explain real-world problems.
+
+Here will be my portfolio of this course!
