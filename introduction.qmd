@@ -1,0 +1,265 @@
+---
+title: "Introduction"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    link-external-newwindow: true
+execute:
+  warning: false
+  message: false
+bibliography: references.bib
+csl: apa.csl        
+link-citations: true  
+editor : source
+---
+
+> *"Eggs at $4? Gas over $5? Rent jumped—again."*  
+> On a chilly morning in early 2023, a grocery receipt went viral: the total looked ordinary, but line items told a story—eggs doubled from a year earlier, milk and bread were up, and a short drive across town now cost noticeably more. That receipt captured what many households felt: **inflation isn't abstract**—it shows up in carts, bills, and budgets.  
+>  
+> This project asks a simple question with complex answers: **How does inflation transmit into the everyday cost of living in the United States—across food, housing, utilities, transportation, and beyond—over time?**
+
+# Topic: What This Project Is (and Is Not)
+
+**Focus.** We study *time-evolving* U.S. living costs and how inflationary pressures pass through to households. We will analyze multiple cost categories—**food**, **shelter (rent/owner-equivalent rent)**, **utilities (electricity, piped gas, water/sewer/trash)**, **transportation (gasoline, transit, auto insurance/maintenance)**, and selected **household services** (e.g., childcare, healthcare out-of-pocket)—to understand **magnitude, timing (lags), heterogeneity, and regime shifts**.
+
+**Not here.** This page **does not** cover datasets, cleaning, or model specifics (they are in other tabs). Here we set the stage: *why it matters*, *what angles we'll take*, *what has been learned*, and *which questions will guide the work*.
+
+---
+
+# The Big Picture
+
+Below is the conceptual map of the project. Each **angle** includes **3–4 temporal data sources** we could analyze (links). This supports a modular site structure where each angle becomes a section with its own time-series models and findings.
+
+```mermaid
+flowchart LR
+  A[Inflation Drivers<br/>(Macro, Policy, Shocks)] --> B[Pass-through to Costs]
+  B --> C1[Food Costs]
+  B --> C2[Shelter Costs]
+  B --> C3[Utilities & Home Energy]
+  B --> C4[Transportation & Fuel]
+  B --> C5[Household Services]
+  B --> C6[Regional & Demographic Heterogeneity]
+  B --> C7[Expectations & Sentiment]
+  B --> C8[Supply Chains & Commodities]
+  B --> C9[Policy Episodes & Regime Shifts]
+  B --> C10[Forecasts & Scenarios]
+  B --> C11[Budget Burden & Distribution]
+  B --> C12[Nowcasting & High-frequency Signals]
+  style B fill:#f8f9ff,stroke:#637,stroke-width:1px
+```
+
+## Angles & Candidate Time-Series Sources
+
+### 1) Food Costs (at home vs away from home)
+
+**What to study:** Size/timing of pass-through; category heterogeneity; energy & wage channels.
+
+**Sources:**
+- [BLS CPI: Food at home, Food away from home (monthly)](https://www.bls.gov/cpi/)
+- [USDA ERS: Food Price Outlook (monthly narrative & tables)](https://www.ers.usda.gov/data-products/food-price-outlook/)
+- [EIA retail fuel & energy prices (weekly/monthly)](https://www.eia.gov/)
+- [BLS CES: industry hourly earnings (monthly)](https://www.bls.gov/ces/)
+
+### 2) Shelter Costs (rent, OER, market rents)
+
+**What to study:** CPI shelter's stickiness; market rent → CPI lags; mortgage rate environment.
+
+**Sources:**
+- [BLS CPI: Shelter, Rent of primary residence, Owners' equivalent rent](https://www.bls.gov/cpi/)
+- [Zillow/Apartment List Rent Index (monthly)](https://www.zillow.com/research/data/) | [Apartment List](https://www.apartmentlist.com/research/category/data)
+- [Freddie Mac PMMS mortgage rates (weekly)](https://www.freddiemac.com/pmms)
+- [S&P/Case-Shiller Home Price (monthly)](https://www.spglobal.com/spdji/en/indices/indicators/sp-corelogic-case-shiller-us-national-home-price-nsa-index/)
+
+### 3) Utilities & Home Energy (electricity, gas, water/sewer/trash)
+
+**What to study:** Seasonal structure; energy shocks; weather load (HDD/CDD).
+
+**Sources:**
+- [BLS CPI: Electricity, Utility (piped) gas service, Water/sewer/trash](https://www.bls.gov/cpi/)
+- [EIA: retail electricity & natural gas prices/consumption](https://www.eia.gov/)
+- [NOAA: HDD/CDD and temperature time series](https://www.noaa.gov/)
+
+### 4) Transportation & Fuel (gasoline, transit, auto services)
+
+**What to study:** Oil → gasoline pass-through; asymmetry (rocket-feather); service costs.
+
+**Sources:**
+- [BLS CPI: Gasoline, Transportation services (e.g., insurance, maintenance)](https://www.bls.gov/cpi/)
+- [EIA: WTI/Brent, retail gasoline (weekly)](https://www.eia.gov/petroleum/gasdiesel/)
+- [BLS PPI for upstream costs](https://www.bls.gov/ppi/)
+
+### 5) Household Services (childcare, health out-of-pocket, education, internet/phone)
+
+**What to study:** Price stickiness; trend vs cyclical; income sensitivity.
+
+**Sources:**
+- [BLS CPI detailed services (monthly)](https://www.bls.gov/cpi/)
+- [FRED health/education price indexes](https://fred.stlouisfed.org/)
+
+### 6) Regional & Demographic Heterogeneity
+
+**What to study:** Metro/regional CPI; urban vs non-urban; distributional burden.
+
+**Sources:**
+- [BLS regional CPI & selected metro indexes](https://www.bls.gov/regions/)
+- [BEA regional price parity (annual with trend context)](https://www.bea.gov/)
+- [CPS micro indicators (for demographic overlays)](https://www.census.gov/programs-surveys/cps.html)
+
+### 7) Expectations & Sentiment
+
+**What to study:** Do inflation expectations predict category moves?
+
+**Sources:**
+- [NY Fed Survey of Consumer Expectations (monthly)](https://www.newyorkfed.org/microeconomics/sce)
+- [University of Michigan Surveys of Consumers](http://www.sca.isr.umich.edu/)
+- [Market-based inflation compensation (breakevens via FRED)](https://fred.stlouisfed.org/)
+
+### 8) Supply Chains & Commodities
+
+**What to study:** Import prices, shipping costs, ag/industrial commodities → retail.
+
+**Sources:**
+- [BLS Import/Export Price Indexes](https://www.bls.gov/mxp/)
+- [FAO Food Price Index](https://www.fao.org/worldfoodsituation/foodpricesindex/)
+- Freight indices (e.g., Drewry/FBX—if accessible)
+
+### 9) Policy Episodes & Regime Shifts (e.g., COVID-19, tightening cycles)
+
+**What to study:** Before/after analyses, breaks, and time-varying pass-through.
+
+**Sources:**
+- [Federal Reserve monetary policy timeline](https://www.federalreserve.gov/monetarypolicy.htm)
+- Fiscal policy events (Treasury/Congressional sources)
+- CPI category histories (BLS)
+
+### 10) Forecasts & Scenarios (12–24 months)
+
+**What to study:** Conditional paths: if core inflation/energy follows a path, where do costs go?
+
+**Sources:**
+- Consensus forecasts (e.g., Survey of Professional Forecasters)
+- [EIA Short-Term Energy Outlook](https://www.eia.gov/outlooks/steo/)
+- Internal model outputs (produced later)
+
+### 11) Budget Burden & Distribution (who bears the pain)
+
+**What to study:** Expenditure shares and effective inflation by group.
+
+**Sources:**
+- [BLS Consumer Expenditure Survey (annual/quarterly detail)](https://www.bls.gov/cex/)
+- [CPI weights and category shares](https://www.bls.gov/cpi/tables/relative-importance/home.htm)
+
+### 12) Nowcasting & High-Frequency Signals (optional)
+
+**What to study:** Weekly/daily signals that anticipate monthly CPI subcomponents.
+
+**Sources:**
+- EIA weekly fuel
+- Card-type or scanner data if accessible
+- Web-scraped price indicators (methodology-dependent)
+
+---
+
+
+# Literature Review
+
+This review synthesizes evidence across our **Big Picture** angles—food, shelter, utilities & energy, transportation, expectations, supply chains & trade, and regional/distributional impacts—and explains how each theme informs our **time-series** choices (e.g., ARDL/local projections, asymmetric pass-through, regime/break tests, STL/X-11, and panel comparisons).
+
+## Food prices: pass-through, lags, and inputs
+Retail food inflation typically shows **incomplete and lagged pass-through** from upstream shocks; **energy** and **labor** costs often matter more than raw farm commodities at the shelf. USDA’s *Food Price Outlook* documents pandemic-era supply disruptions, disease shocks (e.g., HPAI for eggs), and category-specific timing, providing monthly CPI/PPI series and clear event windows that motivate distributed-lag modeling by category [@ers_fpo]. Recent Federal Reserve research quantifies U.S. farm-to-retail pass-through magnitudes and delays, offering priors for our ARDL/local-projection specifications and a benchmark for cross-category heterogeneity [@kc_farm2retail2024].
+
+## Shelter: stickiness and measured lags between market rents and CPI
+A central result is that **CPI shelter responds with multi-month lags** to movements in **market rents** due to lease terms, renewal smoothing, and rent-sample design. @ball2025 formalizes mechanisms that reconcile diverging paths of private rent indices and CPI shelter during 2022–2024. Practitioner analyses reach similar conclusions, stressing persistence risks and the role of market-rent leading indicators [@zillow2025; @roosevelt2025]. These findings motivate our empirical design in which private rent indexes **lead** CPI shelter; we estimate lag lengths and persistence and run pre/post-COVID stability checks.
+
+## Transportation fuels: asymmetric “rockets and feathers”
+The oil-to-gasoline pass-through literature documents **asymmetry**—pump prices rise faster than they fall (“rockets and feathers”). U.S. studies report regional variation and nonlinearity, implying state-dependent responses we address with threshold/interaction terms or quantile-based local projections [@blair2017; @cook2019]. We apply asymmetric diagnostics to gasoline CPI, embedding crude or wholesale gasoline as drivers along with controls for taxes and seasonality.
+
+## Utilities and home energy: weather, seasonality, and energy channels
+Household **electricity** and **piped gas** costs are strongly seasonal and weather-sensitive; **heating/cooling degree days (HDD/CDD)** are standard predictors of load and bills [@eia_hddcdd; @epa_techdoc2021]. We incorporate HDD/CDD into seasonal decompositions (STL/X-11) and into monthly ARDLs for electricity and gas service CPI, testing interactions with fuel prices.
+
+## Supply chains, COVID-era regimes, and policy episodes
+Pandemic-era inflation featured a **regime shift**: in 2021 global supply-chain shocks dominated, while by 2022 traditional demand/supply forces reasserted importance; monetary policy appears more effective after bottlenecks eased [@nber_digest2024; @bai2024]. We therefore run **structural-break tests**, estimate **regime-dependent** pass-through, and annotate policy windows (e.g., rapid tightening cycles) across categories.
+
+## Trade, import prices, and the dollar
+Global evidence shows the **U.S. dollar** plays a dominant role in pricing and transmission. A **1% dollar appreciation** predicts a sizable decline in global trade volumes within a year, with high pass-through into import prices; currency-of-invoicing frameworks further explain muted exchange-rate pass-through to U.S. consumer prices when imports are dollar-priced [@boz2017; @gopinath2016; @cavallo2021]. For our angles we treat dollar moves and import price inflation as external drivers for traded-goods categories (e.g., gasoline, durables), distinguishing border vs. retail pass-through.
+
+## Expectations and sentiment
+Household and firm **inflation expectations** influence near-term price dynamics and can amplify persistence. Recent surveys and syntheses highlight channels via which expectations respond to macro/news and, in turn, affect spending and pricing decisions; we include expectations as covariates in nowcasting and short-horizon prediction for selected CPI subcomponents [@coibion2022; @nyfed_sce].
+
+## Regional and distributional perspectives
+**Regional price parities (RPPs)** allow comparisons of price levels across U.S. states/metros, while **real personal income** series support regional purchasing-power narratives [@bea_rpp]. On the household side, the BLS **Consumer Expenditure Survey (CE)** provides expenditure shares and microdata for distribution-aware analysis, and recent summaries document **inflation differences by income** during 2021–2023 [@bls_cex; @bls_income_inflation]. These sources support **panel** and **distributional** modeling of burden by region and demographic group.
+
+---
+
+# How this literature shapes our models and angles
+
+- **Food.** ARDL/local projections with energy & wage drivers and category-specific lags; compare pass-through strengths pre/post COVID following ERS and Fed evidence [@ers_fpo; @kc_farm2retail2024].  
+- **Shelter.** Treat market-rent indexes as **leaders** for CPI shelter; estimate lag structure and persistence per @ball2025; stress regime/break tests [@zillow2025; @roosevelt2025].  
+- **Transportation.** Test **asymmetric** (rocket/feather) pass-through from crude/wholesale to retail gasoline using threshold ARDL or state interactions [@blair2017; @cook2019].  
+- **Utilities.** Include **HDD/CDD** in STL/X-11 and ARDLs for electricity/gas CPI; evaluate energy-price interactions [@eia_hddcdd; @epa_techdoc2021].  
+- **Supply-chain/Policy.** Implement **breaks/regimes** and annotate policy cycles consistent with NBER evidence on 2021–2022 shifts [@nber_digest2024; @bai2024].  
+- **Trade/Dollar.** Use dollar/import price drivers selectively for traded-goods categories; distinguish border vs. retail pass-through [@boz2017; @cavallo2021; @gopinath2016].  
+- **Distribution/Regions.** Combine CPI paths with **CE expenditure weights** and **RPPs** to assess burden by income/region [@bls_cex; @bea_rpp; @bls_income_inflation].
+
+---
+
+# Analytical Angles (Modular Sections)
+
+We will implement multiple time-series perspectives, typically on monthly series (some weekly/daily for energy/weather):
+
+- **Dynamic Pass-through** (ARDL / Local Projections) from headline/core inflation to category costs.
+- **Input-Cost Decomposition** (energy, wages, import prices) for each category.
+- **Category Heterogeneity** (food subgroups, services vs goods).
+- **Regional/Metro Comparisons** (panel ARDL).
+- **Regime and Breaks** (pre/post COVID; high-inflation vs normal regimes).
+- **Expectations-Augmented Models** (role of consumer expectations).
+- **Forecasts & Scenarios** (baseline + uncertainty bands).
+- **Burden & Equity** (effective inflation by expenditure shares).
+
+Each section will include descriptive TS graphics, formal decomposition (e.g., STL/X-11 where relevant), and inference with uncertainty.
+
+---
+
+# Guiding Questions (Initial Set)
+
+1. How quickly and by how much do headline/core inflation shocks pass through to food, shelter, utilities, transportation, and services?
+
+2. Which input costs (energy, wages, import prices) explain the largest share of category inflation, and how do their lags differ?
+
+3. Are food-at-home and food-away-from-home equally sensitive to inflation shocks?
+
+4. What is the lag between market rent indexes (Zillow/Apartment List) and CPI shelter?
+
+5. Do oil/gas shocks translate asymmetrically to gasoline/utilities (up faster than down)?
+
+6. How do seasonality and weather (HDD/CDD) shape utility bills over time?
+
+7. Where are regional disparities largest, and do they widen in high-inflation regimes?
+
+8. Did pass-through elasticities change before vs after COVID-19?
+
+9. What 12-month scenarios (energy high/low; core steady/declining) imply for household bills?
+
+10. Which categories most drive perceived inflation and budget burden for typical households?
+
+11. Do consumer inflation expectations help forecast category costs beyond standard drivers?
+
+12. Which categories show the strongest/weakest reversion after large shocks?
+
+13. How does import price inflation affect domestic retail prices across goods vs services?
+
+14. Are there structural breaks aligned with major policy episodes (e.g., rapid tightening 2022–2023)?
+
+15. Which category offers the best nowcast signal for next month's CPI?
+
+---
+
+# Why This Matters
+
+A coherent view of inflation → cost-of-living links improves:
+
+- **Policy evaluation** (are rate hikes disinflating shelter with a lag?)
+- **Household planning** (which bills will likely move next?)
+- **Business strategy** (pricing and cost management by category)
+- **Public understanding** (separating seasonal noise from genuine inflation pressure)
