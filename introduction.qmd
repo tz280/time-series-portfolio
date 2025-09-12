@@ -1,5 +1,5 @@
 ---
-title: "Introduction"
+title: "Inflation in Real Life: Time-Series Insights on U.S. Cost of Living"
 format:
   html:
     toc: true
@@ -8,8 +8,7 @@ format:
 execute:
   warning: false
   message: false
-bibliography: references.bib
-csl: apa.csl        
+bibliography: references.bib     
 link-citations: true  
 editor : source
 ---
@@ -19,9 +18,13 @@ editor : source
 >  
 > This project asks a simple question with complex answers: **How does inflation transmit into the everyday cost of living in the United States—across food, housing, utilities, transportation, and beyond—over time?**
 
+![](concept.png)
+
 # Topic: What This Project Is (and Is Not)
 
-**Focus.** We study *time-evolving* U.S. living costs and how inflationary pressures pass through to households. We will analyze multiple cost categories—**food**, **shelter (rent/owner-equivalent rent)**, **utilities (electricity, piped gas, water/sewer/trash)**, **transportation (gasoline, transit, auto insurance/maintenance)**, and selected **household services** (e.g., childcare, healthcare out-of-pocket)—to understand **magnitude, timing (lags), heterogeneity, and regime shifts**.
+**Focus.** This semester, I want to turn my lens to **inflation**. Since the pandemic, supply-chain shocks, rent spikes, and volatile energy prices have pushed inflation from a textbook concept into daily life—grocery runs, takeout, and monthly bills all feel louder now. It’s a hot topic on news feeds and in policy debates about “soft landings,” rate cuts, and the cost-of-living squeeze, and the attention only seems to be growing. For my **DSAN5600 Applied Time Series** project, I’m excited to unpack the data behind this story: track headline vs. core CPI, dive into key components like food, shelter, and energy, and study how interest rates and inflation expectations filter through. I plan to look for trends, seasonality, and possible regime shifts/structural breaks, then build interpretable forecasts and scenario paths for the next few quarters. It’s a way to turn everyday price pressure into a rigorous analysis—and, hopefully, into insight.
+
+**Here.** We study *time-evolving* U.S. living costs and how inflationary pressures pass through to households. We will analyze multiple cost categories—**food**, **shelter (rent/owner-equivalent rent)**, **utilities (electricity, piped gas, water/sewer/trash)**, **transportation (gasoline, transit, auto insurance/maintenance)**, and selected **household services** (e.g., childcare, healthcare out-of-pocket)—to understand **magnitude, timing (lags), heterogeneity, and regime shifts**.
 
 **Not here.** This page **does not** cover datasets, cleaning, or model specifics (they are in other tabs). Here we set the stage: *why it matters*, *what angles we'll take*, *what has been learned*, and *which questions will guide the work*.
 
@@ -29,137 +32,25 @@ editor : source
 
 # The Big Picture
 
-Below is the conceptual map of the project. Each **angle** includes **3–4 temporal data sources** we could analyze (links). This supports a modular site structure where each angle becomes a section with its own time-series models and findings.
+Below is the conceptual map of the project. Each **angle** includes **more than 3 temporal data sources** we could analyze (links). This supports a modular site structure where each angle becomes a section with its own time-series models and findings.
 
-```mermaid
-flowchart LR
-  A[Inflation Drivers<br/>(Macro, Policy, Shocks)] --> B[Pass-through to Costs]
-  B --> C1[Food Costs]
-  B --> C2[Shelter Costs]
-  B --> C3[Utilities & Home Energy]
-  B --> C4[Transportation & Fuel]
-  B --> C5[Household Services]
-  B --> C6[Regional & Demographic Heterogeneity]
-  B --> C7[Expectations & Sentiment]
-  B --> C8[Supply Chains & Commodities]
-  B --> C9[Policy Episodes & Regime Shifts]
-  B --> C10[Forecasts & Scenarios]
-  B --> C11[Budget Burden & Distribution]
-  B --> C12[Nowcasting & High-frequency Signals]
-  style B fill:#f8f9ff,stroke:#637,stroke-width:1px
-```
+![Figure 1: Big Picture (Inflation → U.S. Cost of Living) — eight connected angles linking inflation to household budgets: Food Costs; Shelter; Utilities & Home Energy; Transportation & Fuel; Household Services; Supply Chains & Trade/Dollar; Expectations & Sentiment; Regional & Distributional; Policy & Regimes; Forecasts & Scenarios](bigpicture.jpg)
 
-## Angles & Candidate Time-Series Sources
+This analysis will consider the following seven main areas:
 
-### 1) Food Costs (at home vs away from home)
+1. **Household Budget Components (Food, Shelter, Utilities, Transportation).** The most direct way families experience inflation is through everyday purchases and monthly bills. Centering these categories connects macro price moves to lived reality and reveals where pressures concentrate (e.g., rent vs. groceries) and how categories may co-move or diverge over time.
 
-**What to study:** Size/timing of pass-through; category heterogeneity; energy & wage channels.
+2. **Supply Chains & Trade/Dollar.** Many U.S. prices are downstream of global shipping conditions, import costs, and the U.S. dollar’s strength. Tracking these channels clarifies why domestic prices can rise even when local demand is soft—or ease when bottlenecks clear or the dollar strengthens—linking external shocks to U.S. inflation.
 
-**Sources:**
-- [BLS CPI: Food at home, Food away from home (monthly)](https://www.bls.gov/cpi/)
-- [USDA ERS: Food Price Outlook (monthly narrative & tables)](https://www.ers.usda.gov/data-products/food-price-outlook/)
-- [EIA retail fuel & energy prices (weekly/monthly)](https://www.eia.gov/)
-- [BLS CES: industry hourly earnings (monthly)](https://www.bls.gov/ces/)
+3. **Policy & Regimes (Interest Rates · Regime Shifts).** Monetary policy sets financing conditions and anchors expectations. Highlighting rate cycles and potential **regime shifts** (e.g., from high, volatile inflation to a moderating phase) helps interpret structural breaks that a single average can hide, and frames the transmission from policy to household budgets.
 
-### 2) Shelter Costs (rent, OER, market rents)
+4. **Expectations & Sentiment.** What households and firms *expect* about future prices influences wage bargaining, contracts, and spending. Including surveys and market-implied measures (e.g., breakevens) illuminates feedback loops that can amplify or dampen realized inflation.
 
-**What to study:** CPI shelter's stickiness; market rent → CPI lags; mortgage rate environment.
+5. **Regional & Distributional Patterns.** Inflation is not uniform. Housing scarcity, energy mix, commute modes, and local policy create different paths across regions and income groups. A regional lens prevents national aggregates from masking who bears the brunt of price changes—and when.
 
-**Sources:**
-- [BLS CPI: Shelter, Rent of primary residence, Owners' equivalent rent](https://www.bls.gov/cpi/)
-- [Zillow/Apartment List Rent Index (monthly)](https://www.zillow.com/research/data/) | [Apartment List](https://www.apartmentlist.com/research/category/data)
-- [Freddie Mac PMMS mortgage rates (weekly)](https://www.freddiemac.com/pmms)
-- [S&P/Case-Shiller Home Price (monthly)](https://www.spglobal.com/spdji/en/indices/indicators/sp-corelogic-case-shiller-us-national-home-price-nsa-index/)
+6. **Household Services (Childcare, Health OOP, Internet/Phone).** Services are labor-intensive and often sticky, contributing to the persistence of **core** inflation. Elevating these items explains why inflation can stay elevated even after goods prices cool.
 
-### 3) Utilities & Home Energy (electricity, gas, water/sewer/trash)
-
-**What to study:** Seasonal structure; energy shocks; weather load (HDD/CDD).
-
-**Sources:**
-- [BLS CPI: Electricity, Utility (piped) gas service, Water/sewer/trash](https://www.bls.gov/cpi/)
-- [EIA: retail electricity & natural gas prices/consumption](https://www.eia.gov/)
-- [NOAA: HDD/CDD and temperature time series](https://www.noaa.gov/)
-
-### 4) Transportation & Fuel (gasoline, transit, auto services)
-
-**What to study:** Oil → gasoline pass-through; asymmetry (rocket-feather); service costs.
-
-**Sources:**
-- [BLS CPI: Gasoline, Transportation services (e.g., insurance, maintenance)](https://www.bls.gov/cpi/)
-- [EIA: WTI/Brent, retail gasoline (weekly)](https://www.eia.gov/petroleum/gasdiesel/)
-- [BLS PPI for upstream costs](https://www.bls.gov/ppi/)
-
-### 5) Household Services (childcare, health out-of-pocket, education, internet/phone)
-
-**What to study:** Price stickiness; trend vs cyclical; income sensitivity.
-
-**Sources:**
-- [BLS CPI detailed services (monthly)](https://www.bls.gov/cpi/)
-- [FRED health/education price indexes](https://fred.stlouisfed.org/)
-
-### 6) Regional & Demographic Heterogeneity
-
-**What to study:** Metro/regional CPI; urban vs non-urban; distributional burden.
-
-**Sources:**
-- [BLS regional CPI & selected metro indexes](https://www.bls.gov/regions/)
-- [BEA regional price parity (annual with trend context)](https://www.bea.gov/)
-- [CPS micro indicators (for demographic overlays)](https://www.census.gov/programs-surveys/cps.html)
-
-### 7) Expectations & Sentiment
-
-**What to study:** Do inflation expectations predict category moves?
-
-**Sources:**
-- [NY Fed Survey of Consumer Expectations (monthly)](https://www.newyorkfed.org/microeconomics/sce)
-- [University of Michigan Surveys of Consumers](http://www.sca.isr.umich.edu/)
-- [Market-based inflation compensation (breakevens via FRED)](https://fred.stlouisfed.org/)
-
-### 8) Supply Chains & Commodities
-
-**What to study:** Import prices, shipping costs, ag/industrial commodities → retail.
-
-**Sources:**
-- [BLS Import/Export Price Indexes](https://www.bls.gov/mxp/)
-- [FAO Food Price Index](https://www.fao.org/worldfoodsituation/foodpricesindex/)
-- Freight indices (e.g., Drewry/FBX—if accessible)
-
-### 9) Policy Episodes & Regime Shifts (e.g., COVID-19, tightening cycles)
-
-**What to study:** Before/after analyses, breaks, and time-varying pass-through.
-
-**Sources:**
-- [Federal Reserve monetary policy timeline](https://www.federalreserve.gov/monetarypolicy.htm)
-- Fiscal policy events (Treasury/Congressional sources)
-- CPI category histories (BLS)
-
-### 10) Forecasts & Scenarios (12–24 months)
-
-**What to study:** Conditional paths: if core inflation/energy follows a path, where do costs go?
-
-**Sources:**
-- Consensus forecasts (e.g., Survey of Professional Forecasters)
-- [EIA Short-Term Energy Outlook](https://www.eia.gov/outlooks/steo/)
-- Internal model outputs (produced later)
-
-### 11) Budget Burden & Distribution (who bears the pain)
-
-**What to study:** Expenditure shares and effective inflation by group.
-
-**Sources:**
-- [BLS Consumer Expenditure Survey (annual/quarterly detail)](https://www.bls.gov/cex/)
-- [CPI weights and category shares](https://www.bls.gov/cpi/tables/relative-importance/home.htm)
-
-### 12) Nowcasting & High-Frequency Signals (optional)
-
-**What to study:** Weekly/daily signals that anticipate monthly CPI subcomponents.
-
-**Sources:**
-- EIA weekly fuel
-- Card-type or scanner data if accessible
-- Web-scraped price indicators (methodology-dependent)
-
----
+7. **Forecasts & Scenarios (12–24 Months).** Rather than a single point forecast, scenario paths translate today’s drivers—policy, supply chains, expectations—into plausible futures, clarifying risks around the central outlook and the conditions that would accelerate or slow disinflation.
 
 
 # Literature Review
@@ -192,36 +83,7 @@ Household and firm **inflation expectations** influence near-term price dynamics
 
 ---
 
-# How this literature shapes our models and angles
-
-- **Food.** ARDL/local projections with energy & wage drivers and category-specific lags; compare pass-through strengths pre/post COVID following ERS and Fed evidence [@ers_fpo; @kc_farm2retail2024].  
-- **Shelter.** Treat market-rent indexes as **leaders** for CPI shelter; estimate lag structure and persistence per @ball2025; stress regime/break tests [@zillow2025; @roosevelt2025].  
-- **Transportation.** Test **asymmetric** (rocket/feather) pass-through from crude/wholesale to retail gasoline using threshold ARDL or state interactions [@blair2017; @cook2019].  
-- **Utilities.** Include **HDD/CDD** in STL/X-11 and ARDLs for electricity/gas CPI; evaluate energy-price interactions [@eia_hddcdd; @epa_techdoc2021].  
-- **Supply-chain/Policy.** Implement **breaks/regimes** and annotate policy cycles consistent with NBER evidence on 2021–2022 shifts [@nber_digest2024; @bai2024].  
-- **Trade/Dollar.** Use dollar/import price drivers selectively for traded-goods categories; distinguish border vs. retail pass-through [@boz2017; @cavallo2021; @gopinath2016].  
-- **Distribution/Regions.** Combine CPI paths with **CE expenditure weights** and **RPPs** to assess burden by income/region [@bls_cex; @bea_rpp; @bls_income_inflation].
-
----
-
-# Analytical Angles (Modular Sections)
-
-We will implement multiple time-series perspectives, typically on monthly series (some weekly/daily for energy/weather):
-
-- **Dynamic Pass-through** (ARDL / Local Projections) from headline/core inflation to category costs.
-- **Input-Cost Decomposition** (energy, wages, import prices) for each category.
-- **Category Heterogeneity** (food subgroups, services vs goods).
-- **Regional/Metro Comparisons** (panel ARDL).
-- **Regime and Breaks** (pre/post COVID; high-inflation vs normal regimes).
-- **Expectations-Augmented Models** (role of consumer expectations).
-- **Forecasts & Scenarios** (baseline + uncertainty bands).
-- **Burden & Equity** (effective inflation by expenditure shares).
-
-Each section will include descriptive TS graphics, formal decomposition (e.g., STL/X-11 where relevant), and inference with uncertainty.
-
----
-
-# Guiding Questions (Initial Set)
+# Guiding Questions
 
 1. How quickly and by how much do headline/core inflation shocks pass through to food, shelter, utilities, transportation, and services?
 

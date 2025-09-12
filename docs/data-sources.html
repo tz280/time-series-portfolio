@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>data-sources – Time Series Analysis</title>
+<title>Introduction – Time Series Analysis</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -35,10 +35,10 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -147,17 +147,116 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#angles-candidate-time-series-sources" id="toc-angles-candidate-time-series-sources" class="nav-link active" data-scroll-target="#angles-candidate-time-series-sources">Angles &amp; Candidate Time-Series Sources</a>
+  <ul class="collapse">
+  <li><a href="#food-costs-at-home-vs-away-from-home" id="toc-food-costs-at-home-vs-away-from-home" class="nav-link" data-scroll-target="#food-costs-at-home-vs-away-from-home">1) Food Costs (at home vs away from home)</a></li>
+  <li><a href="#shelter-costs-rent-oer-market-rents" id="toc-shelter-costs-rent-oer-market-rents" class="nav-link" data-scroll-target="#shelter-costs-rent-oer-market-rents">2) Shelter Costs (rent, OER, market rents)</a></li>
+  <li><a href="#utilities-home-energy-electricity-gas-watersewertrash" id="toc-utilities-home-energy-electricity-gas-watersewertrash" class="nav-link" data-scroll-target="#utilities-home-energy-electricity-gas-watersewertrash">3) Utilities &amp; Home Energy (electricity, gas, water/sewer/trash)</a></li>
+  <li><a href="#transportation-fuel-gasoline-transit-auto-services" id="toc-transportation-fuel-gasoline-transit-auto-services" class="nav-link" data-scroll-target="#transportation-fuel-gasoline-transit-auto-services">4) Transportation &amp; Fuel (gasoline, transit, auto services)</a></li>
+  <li><a href="#household-services-childcare-health-out-of-pocket-education-internetphone" id="toc-household-services-childcare-health-out-of-pocket-education-internetphone" class="nav-link" data-scroll-target="#household-services-childcare-health-out-of-pocket-education-internetphone">5) Household Services (childcare, health out-of-pocket, education, internet/phone)</a></li>
+  <li><a href="#regional-demographic-heterogeneity" id="toc-regional-demographic-heterogeneity" class="nav-link" data-scroll-target="#regional-demographic-heterogeneity">6) Regional &amp; Demographic Heterogeneity</a></li>
+  <li><a href="#expectations-sentiment" id="toc-expectations-sentiment" class="nav-link" data-scroll-target="#expectations-sentiment">7) Expectations &amp; Sentiment</a></li>
+  <li><a href="#supply-chains-commodities" id="toc-supply-chains-commodities" class="nav-link" data-scroll-target="#supply-chains-commodities">8) Supply Chains &amp; Commodities</a></li>
+  <li><a href="#policy-episodes-regime-shifts-e.g.-covid-19-tightening-cycles" id="toc-policy-episodes-regime-shifts-e.g.-covid-19-tightening-cycles" class="nav-link" data-scroll-target="#policy-episodes-regime-shifts-e.g.-covid-19-tightening-cycles">9) Policy Episodes &amp; Regime Shifts (e.g., COVID-19, tightening cycles)</a></li>
+  <li><a href="#forecasts-scenarios-1224-months" id="toc-forecasts-scenarios-1224-months" class="nav-link" data-scroll-target="#forecasts-scenarios-1224-months">10) Forecasts &amp; Scenarios (12–24 months)</a></li>
+  <li><a href="#budget-burden-distribution-who-bears-the-pain" id="toc-budget-burden-distribution-who-bears-the-pain" class="nav-link" data-scroll-target="#budget-burden-distribution-who-bears-the-pain">11) Budget Burden &amp; Distribution (who bears the pain)</a></li>
+  <li><a href="#nowcasting-high-frequency-signals-optional" id="toc-nowcasting-high-frequency-signals-optional" class="nav-link" data-scroll-target="#nowcasting-high-frequency-signals-optional">12) Nowcasting &amp; High-Frequency Signals (optional)</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Introduction</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
 
 
+</header>
+
+
+<section id="angles-candidate-time-series-sources" class="level2">
+<h2 class="anchored" data-anchor-id="angles-candidate-time-series-sources">Angles &amp; Candidate Time-Series Sources</h2>
+<section id="food-costs-at-home-vs-away-from-home" class="level3">
+<h3 class="anchored" data-anchor-id="food-costs-at-home-vs-away-from-home">1) Food Costs (at home vs away from home)</h3>
+<p><strong>What to study:</strong> Size/timing of pass-through; category heterogeneity; energy &amp; wage channels.</p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI: Food at home, Food away from home (monthly)</a> - <a href="https://www.ers.usda.gov/data-products/food-price-outlook/">USDA ERS: Food Price Outlook (monthly narrative &amp; tables)</a> - <a href="https://www.eia.gov/">EIA retail fuel &amp; energy prices (weekly/monthly)</a> - <a href="https://www.bls.gov/ces/">BLS CES: industry hourly earnings (monthly)</a></p>
+</section>
+<section id="shelter-costs-rent-oer-market-rents" class="level3">
+<h3 class="anchored" data-anchor-id="shelter-costs-rent-oer-market-rents">2) Shelter Costs (rent, OER, market rents)</h3>
+<p><strong>What to study:</strong> CPI shelter’s stickiness; market rent → CPI lags; mortgage rate environment.</p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI: Shelter, Rent of primary residence, Owners’ equivalent rent</a> - <a href="https://www.zillow.com/research/data/">Zillow/Apartment List Rent Index (monthly)</a> | <a href="https://www.apartmentlist.com/research/category/data">Apartment List</a> - <a href="https://www.freddiemac.com/pmms">Freddie Mac PMMS mortgage rates (weekly)</a> - <a href="https://www.spglobal.com/spdji/en/indices/indicators/sp-corelogic-case-shiller-us-national-home-price-nsa-index/">S&amp;P/Case-Shiller Home Price (monthly)</a></p>
+</section>
+<section id="utilities-home-energy-electricity-gas-watersewertrash" class="level3">
+<h3 class="anchored" data-anchor-id="utilities-home-energy-electricity-gas-watersewertrash">3) Utilities &amp; Home Energy (electricity, gas, water/sewer/trash)</h3>
+<p><strong>What to study:</strong> Seasonal structure; energy shocks; weather load (HDD/CDD).</p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI: Electricity, Utility (piped) gas service, Water/sewer/trash</a> - <a href="https://www.eia.gov/">EIA: retail electricity &amp; natural gas prices/consumption</a> - <a href="https://www.noaa.gov/">NOAA: HDD/CDD and temperature time series</a></p>
+</section>
+<section id="transportation-fuel-gasoline-transit-auto-services" class="level3">
+<h3 class="anchored" data-anchor-id="transportation-fuel-gasoline-transit-auto-services">4) Transportation &amp; Fuel (gasoline, transit, auto services)</h3>
+<p><strong>What to study:</strong> Oil → gasoline pass-through; asymmetry (rocket-feather); service costs.</p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI: Gasoline, Transportation services (e.g., insurance, maintenance)</a> - <a href="https://www.eia.gov/petroleum/gasdiesel/">EIA: WTI/Brent, retail gasoline (weekly)</a> - <a href="https://www.bls.gov/ppi/">BLS PPI for upstream costs</a></p>
+</section>
+<section id="household-services-childcare-health-out-of-pocket-education-internetphone" class="level3">
+<h3 class="anchored" data-anchor-id="household-services-childcare-health-out-of-pocket-education-internetphone">5) Household Services (childcare, health out-of-pocket, education, internet/phone)</h3>
+<p><strong>What to study:</strong> Price stickiness; trend vs cyclical; income sensitivity.</p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI detailed services (monthly)</a> - <a href="https://fred.stlouisfed.org/">FRED health/education price indexes</a></p>
+</section>
+<section id="regional-demographic-heterogeneity" class="level3">
+<h3 class="anchored" data-anchor-id="regional-demographic-heterogeneity">6) Regional &amp; Demographic Heterogeneity</h3>
+<p><strong>What to study:</strong> Metro/regional CPI; urban vs non-urban; distributional burden.</p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/regions/">BLS regional CPI &amp; selected metro indexes</a> - <a href="https://www.bea.gov/">BEA regional price parity (annual with trend context)</a> - <a href="https://www.census.gov/programs-surveys/cps.html">CPS micro indicators (for demographic overlays)</a></p>
+</section>
+<section id="expectations-sentiment" class="level3">
+<h3 class="anchored" data-anchor-id="expectations-sentiment">7) Expectations &amp; Sentiment</h3>
+<p><strong>What to study:</strong> Do inflation expectations predict category moves?</p>
+<p><strong>Sources:</strong> - <a href="https://www.newyorkfed.org/microeconomics/sce">NY Fed Survey of Consumer Expectations (monthly)</a> - <a href="http://www.sca.isr.umich.edu/">University of Michigan Surveys of Consumers</a> - <a href="https://fred.stlouisfed.org/">Market-based inflation compensation (breakevens via FRED)</a></p>
+</section>
+<section id="supply-chains-commodities" class="level3">
+<h3 class="anchored" data-anchor-id="supply-chains-commodities">8) Supply Chains &amp; Commodities</h3>
+<p><strong>What to study:</strong> Import prices, shipping costs, ag/industrial commodities → retail.</p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/mxp/">BLS Import/Export Price Indexes</a> - <a href="https://www.fao.org/worldfoodsituation/foodpricesindex/">FAO Food Price Index</a> - Freight indices (e.g., Drewry/FBX—if accessible)</p>
+</section>
+<section id="policy-episodes-regime-shifts-e.g.-covid-19-tightening-cycles" class="level3">
+<h3 class="anchored" data-anchor-id="policy-episodes-regime-shifts-e.g.-covid-19-tightening-cycles">9) Policy Episodes &amp; Regime Shifts (e.g., COVID-19, tightening cycles)</h3>
+<p><strong>What to study:</strong> Before/after analyses, breaks, and time-varying pass-through.</p>
+<p><strong>Sources:</strong> - <a href="https://www.federalreserve.gov/monetarypolicy.htm">Federal Reserve monetary policy timeline</a> - Fiscal policy events (Treasury/Congressional sources) - CPI category histories (BLS)</p>
+</section>
+<section id="forecasts-scenarios-1224-months" class="level3">
+<h3 class="anchored" data-anchor-id="forecasts-scenarios-1224-months">10) Forecasts &amp; Scenarios (12–24 months)</h3>
+<p><strong>What to study:</strong> Conditional paths: if core inflation/energy follows a path, where do costs go?</p>
+<p><strong>Sources:</strong> - Consensus forecasts (e.g., Survey of Professional Forecasters) - <a href="https://www.eia.gov/outlooks/steo/">EIA Short-Term Energy Outlook</a> - Internal model outputs (produced later)</p>
+</section>
+<section id="budget-burden-distribution-who-bears-the-pain" class="level3">
+<h3 class="anchored" data-anchor-id="budget-burden-distribution-who-bears-the-pain">11) Budget Burden &amp; Distribution (who bears the pain)</h3>
+<p><strong>What to study:</strong> Expenditure shares and effective inflation by group.</p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cex/">BLS Consumer Expenditure Survey (annual/quarterly detail)</a> - <a href="https://www.bls.gov/cpi/tables/relative-importance/home.htm">CPI weights and category shares</a></p>
+</section>
+<section id="nowcasting-high-frequency-signals-optional" class="level3">
+<h3 class="anchored" data-anchor-id="nowcasting-high-frequency-signals-optional">12) Nowcasting &amp; High-Frequency Signals (optional)</h3>
+<p><strong>What to study:</strong> Weekly/daily signals that anticipate monthly CPI subcomponents.</p>
+<p><strong>Sources:</strong> - EIA weekly fuel - Card-type or scanner data if accessible - Web-scraped price indicators (methodology-dependent)</p>
+
+
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -266,6 +365,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         if (link.dataset.originalHref !== undefined) {
           link.href = link.dataset.originalHref;
         }
+          // target, if specified
+          link.setAttribute("target", "_blank");
+          if (link.getAttribute("rel") === null) {
+            link.setAttribute("rel", "noopener");
+          }
       }
     }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
