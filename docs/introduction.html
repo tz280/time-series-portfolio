@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Introduction – Time Series Analysis</title>
+<title>Inflation in Real Life: Time-Series Insights on U.S. Cost of Living – Time Series Analysis</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -195,7 +195,7 @@ div.csl-indent {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Introduction</h1>
+<h1 class="title">Inflation in Real Life: Time-Series Insights on U.S. Cost of Living</h1>
 </div>
 
 
@@ -217,22 +217,33 @@ div.csl-indent {
 On a chilly morning in early 2023, a grocery receipt went viral: the total looked ordinary, but line items told a story—eggs doubled from a year earlier, milk and bread were up, and a short drive across town now cost noticeably more. That receipt captured what many households felt: <strong>inflation isn’t abstract</strong>—it shows up in carts, bills, and budgets.</p>
 <p>This project asks a simple question with complex answers: <strong>How does inflation transmit into the everyday cost of living in the United States—across food, housing, utilities, transportation, and beyond—over time?</strong></p>
 </blockquote>
+<p><img src="concept.png" class="img-fluid"></p>
 <section id="topic-what-this-project-is-and-is-not" class="level1">
 <h1>Topic: What This Project Is (and Is Not)</h1>
-<p><strong>Focus.</strong> We study <em>time-evolving</em> U.S. living costs and how inflationary pressures pass through to households. We will analyze multiple cost categories—<strong>food</strong>, <strong>shelter (rent/owner-equivalent rent)</strong>, <strong>utilities (electricity, piped gas, water/sewer/trash)</strong>, <strong>transportation (gasoline, transit, auto insurance/maintenance)</strong>, and selected <strong>household services</strong> (e.g., childcare, healthcare out-of-pocket)—to understand <strong>magnitude, timing (lags), heterogeneity, and regime shifts</strong>.</p>
+<p><strong>Focus.</strong> This semester, I want to turn my lens to <strong>inflation</strong>. Since the pandemic, supply-chain shocks, rent spikes, and volatile energy prices have pushed inflation from a textbook concept into daily life—grocery runs, takeout, and monthly bills all feel louder now. It’s a hot topic on news feeds and in policy debates about “soft landings,” rate cuts, and the cost-of-living squeeze, and the attention only seems to be growing. For my <strong>DSAN5600 Applied Time Series</strong> project, I’m excited to unpack the data behind this story: track headline vs.&nbsp;core CPI, dive into key components like food, shelter, and energy, and study how interest rates and inflation expectations filter through. I plan to look for trends, seasonality, and possible regime shifts/structural breaks, then build interpretable forecasts and scenario paths for the next few quarters. It’s a way to turn everyday price pressure into a rigorous analysis—and, hopefully, into insight.</p>
+<p><strong>Here.</strong> We study <em>time-evolving</em> U.S. living costs and how inflationary pressures pass through to households. We will analyze multiple cost categories—<strong>food</strong>, <strong>shelter (rent/owner-equivalent rent)</strong>, <strong>utilities (electricity, piped gas, water/sewer/trash)</strong>, <strong>transportation (gasoline, transit, auto insurance/maintenance)</strong>, and selected <strong>household services</strong> (e.g., childcare, healthcare out-of-pocket)—to understand <strong>magnitude, timing (lags), heterogeneity, and regime shifts</strong>.</p>
 <p><strong>Not here.</strong> This page <strong>does not</strong> cover datasets, cleaning, or model specifics (they are in other tabs). Here we set the stage: <em>why it matters</em>, <em>what angles we’ll take</em>, <em>what has been learned</em>, and <em>which questions will guide the work</em>.</p>
 <hr>
 </section>
 <section id="the-big-picture" class="level1">
 <h1>The Big Picture</h1>
-<p>Below is the conceptual map of the project. Each <strong>angle</strong> includes <strong>3–4 temporal data sources</strong> we could analyze (links). This supports a modular site structure where each angle becomes a section with its own time-series models and findings.</p>
+<p>Below is the conceptual map of the project. Each <strong>angle</strong> includes <strong>more than 3 temporal data sources</strong> we could analyze (links). This supports a modular site structure where each angle becomes a section with its own time-series models and findings.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="bigpicture.jpg" class="img-fluid figure-img"></p>
 <figcaption>Figure 1: Big Picture (Inflation → U.S. Cost of Living) — eight connected angles linking inflation to household budgets: Food Costs; Shelter; Utilities &amp; Home Energy; Transportation &amp; Fuel; Household Services; Supply Chains &amp; Trade/Dollar; Expectations &amp; Sentiment; Regional &amp; Distributional; Policy &amp; Regimes; Forecasts &amp; Scenarios</figcaption>
 </figure>
 </div>
-<hr>
+<p>This analysis will consider the following seven main areas:</p>
+<ol type="1">
+<li><p><strong>Household Budget Components (Food, Shelter, Utilities, Transportation).</strong> The most direct way families experience inflation is through everyday purchases and monthly bills. Centering these categories connects macro price moves to lived reality and reveals where pressures concentrate (e.g., rent vs.&nbsp;groceries) and how categories may co-move or diverge over time.</p></li>
+<li><p><strong>Supply Chains &amp; Trade/Dollar.</strong> Many U.S. prices are downstream of global shipping conditions, import costs, and the U.S. dollar’s strength. Tracking these channels clarifies why domestic prices can rise even when local demand is soft—or ease when bottlenecks clear or the dollar strengthens—linking external shocks to U.S. inflation.</p></li>
+<li><p><strong>Policy &amp; Regimes (Interest Rates · Regime Shifts).</strong> Monetary policy sets financing conditions and anchors expectations. Highlighting rate cycles and potential <strong>regime shifts</strong> (e.g., from high, volatile inflation to a moderating phase) helps interpret structural breaks that a single average can hide, and frames the transmission from policy to household budgets.</p></li>
+<li><p><strong>Expectations &amp; Sentiment.</strong> What households and firms <em>expect</em> about future prices influences wage bargaining, contracts, and spending. Including surveys and market-implied measures (e.g., breakevens) illuminates feedback loops that can amplify or dampen realized inflation.</p></li>
+<li><p><strong>Regional &amp; Distributional Patterns.</strong> Inflation is not uniform. Housing scarcity, energy mix, commute modes, and local policy create different paths across regions and income groups. A regional lens prevents national aggregates from masking who bears the brunt of price changes—and when.</p></li>
+<li><p><strong>Household Services (Childcare, Health OOP, Internet/Phone).</strong> Services are labor-intensive and often sticky, contributing to the persistence of <strong>core</strong> inflation. Elevating these items explains why inflation can stay elevated even after goods prices cool.</p></li>
+<li><p><strong>Forecasts &amp; Scenarios (12–24 Months).</strong> Rather than a single point forecast, scenario paths translate today’s drivers—policy, supply chains, expectations—into plausible futures, clarifying risks around the central outlook and the conditions that would accelerate or slow disinflation.</p></li>
+</ol>
 </section>
 <section id="literature-review" class="level1">
 <h1>Literature Review</h1>

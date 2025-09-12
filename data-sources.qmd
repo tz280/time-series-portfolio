@@ -34,7 +34,7 @@ I have gathered data from the following sources.
 - **Drewry (Freight Index)** — <https://www.drewry.co.uk/>
 - **Freightos Baltic Index (FBX)** — <https://fbx.freightos.com/>
 
-!["Figure 2.1: Part of logos of the data sources' websites](datasources.jpg)
+![Figure 2.1: Part of logos of the data sources' websites](datasources.jpg)
 
 ---
 
@@ -52,7 +52,7 @@ I have gathered data from the following sources.
 - [BLS CES: industry hourly earnings (monthly)](https://www.bls.gov/ces/)  
   *Wage pressure in grocery/restaurant sectors to study cost pass-through.*
 
-!["Figure 2.2: Food Cost Over Time](pics/food.png)
+![Figure 2.2: Food Cost Over Time](pics/food.png)
 ---
 
 ### 2) Shelter Costs (rent, OER, market rents)
@@ -69,7 +69,7 @@ I have gathered data from the following sources.
 - [S&P/Case-Shiller Home Price (monthly)](https://www.spglobal.com/spdji/en/indices/indicators/sp-corelogic-case-shiller-us-national-home-price-nsa-index/)  
   *Asset-price backdrop informing housing tightness and rent dynamics.*
 
-!["Figure 2.3: Housing Cost From Freddie Mac Over Time](pics/house.png)
+![Figure 2.3: Housing Cost From Freddie Mac Over Time](pics/house.png)
 
 ---
 
@@ -85,7 +85,7 @@ I have gathered data from the following sources.
 - [NOAA: HDD/CDD and temperature time series](https://www.noaa.gov/)  
   *Weather load metrics to explain seasonal and shock-driven demand.*
 
-!["Figure 2.4: U.S. Regular Gasoline Prices Over Time](pics/gas.png)
+![Figure 2.4: U.S. Regular Gasoline Prices Over Time](pics/gas.png)
 
 ---
 
@@ -127,7 +127,7 @@ I have gathered data from the following sources.
 - [CPS micro indicators (for demographic overlays)](https://www.census.gov/programs-surveys/cps.html)  
   *Household characteristics enabling distributional analysis.*
 
-!["Figure 2.5: Regional CPI & Selected Indexes Over Time](pics/region.png)
+![Figure 2.5: Regional CPI & Selected Indexes Over Time](pics/region.png)
 
 ---
 
@@ -157,7 +157,7 @@ I have gathered data from the following sources.
 - *Freight indices (e.g., Drewry/FBX—if accessible)*  
   *Shipping cost gauge for supply-chain tightness/bottlenecks.*
 
-!["Figure 2.6: U.S. Import and Export Price Indexes Over Time](pics/supply.png)
+![Figure 2.6: U.S. Import and Export Price Indexes Over Time](pics/supply.png)
 
 ---
 

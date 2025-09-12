@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Introduction – Time Series Analysis</title>
+<title>Data Sources – Time Series Analysis</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -152,9 +152,7 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#angles-candidate-time-series-sources" id="toc-angles-candidate-time-series-sources" class="nav-link active" data-scroll-target="#angles-candidate-time-series-sources">Angles &amp; Candidate Time-Series Sources</a>
-  <ul class="collapse">
-  <li><a href="#food-costs-at-home-vs-away-from-home" id="toc-food-costs-at-home-vs-away-from-home" class="nav-link" data-scroll-target="#food-costs-at-home-vs-away-from-home">1) Food Costs (at home vs away from home)</a></li>
+  <li><a href="#food-costs-at-home-vs-away-from-home" id="toc-food-costs-at-home-vs-away-from-home" class="nav-link active" data-scroll-target="#food-costs-at-home-vs-away-from-home">1) Food Costs (at home vs away from home)</a></li>
   <li><a href="#shelter-costs-rent-oer-market-rents" id="toc-shelter-costs-rent-oer-market-rents" class="nav-link" data-scroll-target="#shelter-costs-rent-oer-market-rents">2) Shelter Costs (rent, OER, market rents)</a></li>
   <li><a href="#utilities-home-energy-electricity-gas-watersewertrash" id="toc-utilities-home-energy-electricity-gas-watersewertrash" class="nav-link" data-scroll-target="#utilities-home-energy-electricity-gas-watersewertrash">3) Utilities &amp; Home Energy (electricity, gas, water/sewer/trash)</a></li>
   <li><a href="#transportation-fuel-gasoline-transit-auto-services" id="toc-transportation-fuel-gasoline-transit-auto-services" class="nav-link" data-scroll-target="#transportation-fuel-gasoline-transit-auto-services">4) Transportation &amp; Fuel (gasoline, transit, auto services)</a></li>
@@ -165,8 +163,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#policy-episodes-regime-shifts-e.g.-covid-19-tightening-cycles" id="toc-policy-episodes-regime-shifts-e.g.-covid-19-tightening-cycles" class="nav-link" data-scroll-target="#policy-episodes-regime-shifts-e.g.-covid-19-tightening-cycles">9) Policy Episodes &amp; Regime Shifts (e.g., COVID-19, tightening cycles)</a></li>
   <li><a href="#forecasts-scenarios-1224-months" id="toc-forecasts-scenarios-1224-months" class="nav-link" data-scroll-target="#forecasts-scenarios-1224-months">10) Forecasts &amp; Scenarios (12–24 months)</a></li>
   <li><a href="#budget-burden-distribution-who-bears-the-pain" id="toc-budget-burden-distribution-who-bears-the-pain" class="nav-link" data-scroll-target="#budget-burden-distribution-who-bears-the-pain">11) Budget Burden &amp; Distribution (who bears the pain)</a></li>
-  <li><a href="#nowcasting-high-frequency-signals-optional" id="toc-nowcasting-high-frequency-signals-optional" class="nav-link" data-scroll-target="#nowcasting-high-frequency-signals-optional">12) Nowcasting &amp; High-Frequency Signals (optional)</a></li>
-  </ul></li>
+  <li><a href="#nowcasting-high-frequency-signals" id="toc-nowcasting-high-frequency-signals" class="nav-link" data-scroll-target="#nowcasting-high-frequency-signals">12) Nowcasting &amp; High-Frequency Signals</a></li>
   </ul>
 </nav>
     </div>
@@ -175,7 +172,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Introduction</h1>
+<h1 class="title">Data Sources</h1>
 </div>
 
 
@@ -192,70 +189,174 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="angles-candidate-time-series-sources" class="level2">
-<h2 class="anchored" data-anchor-id="angles-candidate-time-series-sources">Angles &amp; Candidate Time-Series Sources</h2>
+<p>I have gathered data from the following sources.</p>
+<ul>
+<li><strong>BLS</strong> — <a href="https://www.bls.gov/" class="uri">https://www.bls.gov/</a></li>
+<li><strong>USDA</strong> — <a href="https://www.usda.gov/" class="uri">https://www.usda.gov/</a></li>
+<li><strong>EIA</strong> — <a href="https://www.eia.gov/" class="uri">https://www.eia.gov/</a></li>
+<li><strong>Zillow</strong> — <a href="https://www.zillow.com/" class="uri">https://www.zillow.com/</a></li>
+<li><strong>Apartment List</strong> — <a href="https://www.apartmentlist.com/" class="uri">https://www.apartmentlist.com/</a></li>
+<li><strong>Freddie Mac</strong> — <a href="https://www.freddiemac.com/" class="uri">https://www.freddiemac.com/</a></li>
+<li><strong>S&amp;P Global</strong> — <a href="https://www.spglobal.com/" class="uri">https://www.spglobal.com/</a></li>
+<li><strong>NOAA</strong> — <a href="https://www.noaa.gov/" class="uri">https://www.noaa.gov/</a></li>
+<li><strong>FRED (St.&nbsp;Louis Fed)</strong> — <a href="https://fred.stlouisfed.org/" class="uri">https://fred.stlouisfed.org/</a></li>
+<li><strong>BEA</strong> — <a href="https://www.bea.gov/" class="uri">https://www.bea.gov/</a></li>
+<li><strong>U.S. Census Bureau</strong> — <a href="https://www.census.gov/" class="uri">https://www.census.gov/</a></li>
+<li><strong>Federal Reserve Bank of New York</strong> — <a href="https://www.newyorkfed.org/" class="uri">https://www.newyorkfed.org/</a></li>
+<li><strong>University of Michigan ISR</strong> — <a href="https://isr.umich.edu/" class="uri">https://isr.umich.edu/</a></li>
+<li><strong>FAO</strong> — <a href="https://www.fao.org/" class="uri">https://www.fao.org/</a></li>
+<li><strong>Board of Governors of the Federal Reserve System</strong> — <a href="https://www.federalreserve.gov/" class="uri">https://www.federalreserve.gov/</a></li>
+<li><strong>U.S. Department of the Treasury</strong> — <a href="https://home.treasury.gov/" class="uri">https://home.treasury.gov/</a></li>
+<li><strong>U.S. Congress</strong> — <a href="https://www.congress.gov/" class="uri">https://www.congress.gov/</a></li>
+<li><strong>Federal Reserve Bank of Philadelphia (SPF)</strong> — <a href="https://www.philadelphiafed.org/" class="uri">https://www.philadelphiafed.org/</a></li>
+<li><strong>Drewry (Freight Index)</strong> — <a href="https://www.drewry.co.uk/" class="uri">https://www.drewry.co.uk/</a></li>
+<li><strong>Freightos Baltic Index (FBX)</strong> — <a href="https://fbx.freightos.com/" class="uri">https://fbx.freightos.com/</a></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="datasources.jpg" class="img-fluid figure-img"></p>
+<figcaption>“Figure 2.1: Part of logos of the data sources’ websites</figcaption>
+</figure>
+</div>
+<hr>
 <section id="food-costs-at-home-vs-away-from-home" class="level3">
 <h3 class="anchored" data-anchor-id="food-costs-at-home-vs-away-from-home">1) Food Costs (at home vs away from home)</h3>
 <p><strong>What to study:</strong> Size/timing of pass-through; category heterogeneity; energy &amp; wage channels.</p>
-<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI: Food at home, Food away from home (monthly)</a> - <a href="https://www.ers.usda.gov/data-products/food-price-outlook/">USDA ERS: Food Price Outlook (monthly narrative &amp; tables)</a> - <a href="https://www.eia.gov/">EIA retail fuel &amp; energy prices (weekly/monthly)</a> - <a href="https://www.bls.gov/ces/">BLS CES: industry hourly earnings (monthly)</a></p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI: Food at home, Food away from home (monthly)</a><br>
+<em>Official micro-category CPI series to quantify level, trend, and seasonality of food price inflation.</em> - <a href="https://www.ers.usda.gov/data-products/food-price-outlook/">USDA ERS: Food Price Outlook (monthly narrative &amp; tables)</a><br>
+<em>Contextual forecasts and explanations of drivers behind food price movements.</em> - <a href="https://www.eia.gov/">EIA retail fuel &amp; energy prices (weekly/monthly)</a><br>
+<em>Energy input costs that affect food production, transport, and restaurant operations.</em> - <a href="https://www.bls.gov/ces/">BLS CES: industry hourly earnings (monthly)</a><br>
+<em>Wage pressure in grocery/restaurant sectors to study cost pass-through.</em></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pics/food.png" class="img-fluid figure-img"></p>
+<figcaption>“Figure 2.2: Food Cost Over Time</figcaption>
+</figure>
+</div>
+<hr>
 </section>
 <section id="shelter-costs-rent-oer-market-rents" class="level3">
 <h3 class="anchored" data-anchor-id="shelter-costs-rent-oer-market-rents">2) Shelter Costs (rent, OER, market rents)</h3>
 <p><strong>What to study:</strong> CPI shelter’s stickiness; market rent → CPI lags; mortgage rate environment.</p>
-<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI: Shelter, Rent of primary residence, Owners’ equivalent rent</a> - <a href="https://www.zillow.com/research/data/">Zillow/Apartment List Rent Index (monthly)</a> | <a href="https://www.apartmentlist.com/research/category/data">Apartment List</a> - <a href="https://www.freddiemac.com/pmms">Freddie Mac PMMS mortgage rates (weekly)</a> - <a href="https://www.spglobal.com/spdji/en/indices/indicators/sp-corelogic-case-shiller-us-national-home-price-nsa-index/">S&amp;P/Case-Shiller Home Price (monthly)</a></p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI: Shelter, Rent of primary residence, Owners’ equivalent rent</a><br>
+<em>Core measures used in headline/core CPI; anchor for official shelter inflation.</em> - <a href="https://www.zillow.com/research/data/">Zillow/Apartment List Rent Index (monthly)</a> | <a href="https://www.apartmentlist.com/research/category/data">Apartment List</a><br>
+<em>High-frequency market rents to gauge leads/lags relative to CPI shelter.</em> - <a href="https://www.freddiemac.com/pmms">Freddie Mac PMMS mortgage rates (weekly)</a><br>
+<em>Rate environment shaping housing demand and landlord financing costs.</em> - <a href="https://www.spglobal.com/spdji/en/indices/indicators/sp-corelogic-case-shiller-us-national-home-price-nsa-index/">S&amp;P/Case-Shiller Home Price (monthly)</a><br>
+<em>Asset-price backdrop informing housing tightness and rent dynamics.</em></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pics/house.png" class="img-fluid figure-img"></p>
+<figcaption>“Figure 2.3: Housing Cost From Freddie Mac Over Time</figcaption>
+</figure>
+</div>
+<hr>
 </section>
 <section id="utilities-home-energy-electricity-gas-watersewertrash" class="level3">
 <h3 class="anchored" data-anchor-id="utilities-home-energy-electricity-gas-watersewertrash">3) Utilities &amp; Home Energy (electricity, gas, water/sewer/trash)</h3>
 <p><strong>What to study:</strong> Seasonal structure; energy shocks; weather load (HDD/CDD).</p>
-<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI: Electricity, Utility (piped) gas service, Water/sewer/trash</a> - <a href="https://www.eia.gov/">EIA: retail electricity &amp; natural gas prices/consumption</a> - <a href="https://www.noaa.gov/">NOAA: HDD/CDD and temperature time series</a></p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI: Electricity, Utility (piped) gas service, Water/sewer/trash</a><br>
+<em>Consumer price outcomes for utility categories.</em> - <a href="https://www.eia.gov/">EIA: retail electricity &amp; natural gas prices/consumption</a><br>
+<em>Supply-side prices/usage to connect wholesale shocks to retail bills.</em> - <a href="https://www.noaa.gov/">NOAA: HDD/CDD and temperature time series</a><br>
+<em>Weather load metrics to explain seasonal and shock-driven demand.</em></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pics/gas.png" class="img-fluid figure-img"></p>
+<figcaption>“Figure 2.4: U.S. Regular Gasoline Prices Over Time</figcaption>
+</figure>
+</div>
+<hr>
 </section>
 <section id="transportation-fuel-gasoline-transit-auto-services" class="level3">
 <h3 class="anchored" data-anchor-id="transportation-fuel-gasoline-transit-auto-services">4) Transportation &amp; Fuel (gasoline, transit, auto services)</h3>
 <p><strong>What to study:</strong> Oil → gasoline pass-through; asymmetry (rocket-feather); service costs.</p>
-<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI: Gasoline, Transportation services (e.g., insurance, maintenance)</a> - <a href="https://www.eia.gov/petroleum/gasdiesel/">EIA: WTI/Brent, retail gasoline (weekly)</a> - <a href="https://www.bls.gov/ppi/">BLS PPI for upstream costs</a></p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI: Gasoline, Transportation services (e.g., insurance, maintenance)</a><br>
+<em>End-user prices for fuel and transport-related services.</em> - <a href="https://www.eia.gov/petroleum/gasdiesel/">EIA: WTI/Brent, retail gasoline (weekly)</a><br>
+<em>Upstream crude and retail fuel to measure pass-through and timing.</em> - <a href="https://www.bls.gov/ppi/">BLS PPI for upstream costs</a><br>
+<em>Producer-level cost pressures feeding into consumer services.</em></p>
+<hr>
 </section>
 <section id="household-services-childcare-health-out-of-pocket-education-internetphone" class="level3">
 <h3 class="anchored" data-anchor-id="household-services-childcare-health-out-of-pocket-education-internetphone">5) Household Services (childcare, health out-of-pocket, education, internet/phone)</h3>
 <p><strong>What to study:</strong> Price stickiness; trend vs cyclical; income sensitivity.</p>
-<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI detailed services (monthly)</a> - <a href="https://fred.stlouisfed.org/">FRED health/education price indexes</a></p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cpi/">BLS CPI detailed services (monthly)</a><br>
+<em>Granular service categories to assess persistence of core inflation.</em> - <a href="https://fred.stlouisfed.org/">FRED health/education price indexes</a><br>
+<em>Curated time series (healthcare, tuition, telecom) for long-run context.</em></p>
+<hr>
 </section>
 <section id="regional-demographic-heterogeneity" class="level3">
 <h3 class="anchored" data-anchor-id="regional-demographic-heterogeneity">6) Regional &amp; Demographic Heterogeneity</h3>
 <p><strong>What to study:</strong> Metro/regional CPI; urban vs non-urban; distributional burden.</p>
-<p><strong>Sources:</strong> - <a href="https://www.bls.gov/regions/">BLS regional CPI &amp; selected metro indexes</a> - <a href="https://www.bea.gov/">BEA regional price parity (annual with trend context)</a> - <a href="https://www.census.gov/programs-surveys/cps.html">CPS micro indicators (for demographic overlays)</a></p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/regions/">BLS regional CPI &amp; selected metro indexes</a><br>
+<em>Official regional inflation measures to compare geography.</em> - <a href="https://www.bea.gov/">BEA regional price parity (annual with trend context)</a><br>
+<em>Relative price levels across states/MSAs to complement CPI growth rates.</em> - <a href="https://www.census.gov/programs-surveys/cps.html">CPS micro indicators (for demographic overlays)</a><br>
+<em>Household characteristics enabling distributional analysis.</em></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pics/region.png" class="img-fluid figure-img"></p>
+<figcaption>“Figure 2.5: Regional CPI &amp; Selected Indexes Over Time</figcaption>
+</figure>
+</div>
+<hr>
 </section>
 <section id="expectations-sentiment" class="level3">
 <h3 class="anchored" data-anchor-id="expectations-sentiment">7) Expectations &amp; Sentiment</h3>
 <p><strong>What to study:</strong> Do inflation expectations predict category moves?</p>
-<p><strong>Sources:</strong> - <a href="https://www.newyorkfed.org/microeconomics/sce">NY Fed Survey of Consumer Expectations (monthly)</a> - <a href="http://www.sca.isr.umich.edu/">University of Michigan Surveys of Consumers</a> - <a href="https://fred.stlouisfed.org/">Market-based inflation compensation (breakevens via FRED)</a></p>
+<p><strong>Sources:</strong> - <a href="https://www.newyorkfed.org/microeconomics/sce">NY Fed Survey of Consumer Expectations (monthly)</a><br>
+<em>Household inflation expectations and uncertainty.</em> - <a href="http://www.sca.isr.umich.edu/">University of Michigan Surveys of Consumers</a><br>
+<em>Sentiment and expected price changes for near-term demand signals.</em> - <a href="https://fred.stlouisfed.org/">Market-based inflation compensation (breakevens via FRED)</a><br>
+<em>Investor-implied inflation expectations from TIPS markets.</em></p>
+<hr>
 </section>
 <section id="supply-chains-commodities" class="level3">
 <h3 class="anchored" data-anchor-id="supply-chains-commodities">8) Supply Chains &amp; Commodities</h3>
 <p><strong>What to study:</strong> Import prices, shipping costs, ag/industrial commodities → retail.</p>
-<p><strong>Sources:</strong> - <a href="https://www.bls.gov/mxp/">BLS Import/Export Price Indexes</a> - <a href="https://www.fao.org/worldfoodsituation/foodpricesindex/">FAO Food Price Index</a> - Freight indices (e.g., Drewry/FBX—if accessible)</p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/mxp/">BLS Import/Export Price Indexes</a><br>
+<em>Border prices to assess external cost pressures and pass-through.</em> - <a href="https://www.fao.org/worldfoodsituation/foodpricesindex/">FAO Food Price Index</a><br>
+<em>Global agricultural price benchmark for U.S. food categories.</em> - <em>Freight indices (e.g., Drewry/FBX—if accessible)</em><br>
+<em>Shipping cost gauge for supply-chain tightness/bottlenecks.</em></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pics/supply.png" class="img-fluid figure-img"></p>
+<figcaption>“Figure 2.6: U.S. Import and Export Price Indexes Over Time</figcaption>
+</figure>
+</div>
+<hr>
 </section>
 <section id="policy-episodes-regime-shifts-e.g.-covid-19-tightening-cycles" class="level3">
 <h3 class="anchored" data-anchor-id="policy-episodes-regime-shifts-e.g.-covid-19-tightening-cycles">9) Policy Episodes &amp; Regime Shifts (e.g., COVID-19, tightening cycles)</h3>
 <p><strong>What to study:</strong> Before/after analyses, breaks, and time-varying pass-through.</p>
-<p><strong>Sources:</strong> - <a href="https://www.federalreserve.gov/monetarypolicy.htm">Federal Reserve monetary policy timeline</a> - Fiscal policy events (Treasury/Congressional sources) - CPI category histories (BLS)</p>
+<p><strong>Sources:</strong> - <a href="https://www.federalreserve.gov/monetarypolicy.htm">Federal Reserve monetary policy timeline</a><br>
+<em>Dates/cycles for policy shocks and guidance pivots.</em> - <em>Fiscal policy events (Treasury/Congressional sources)</em><br>
+<em>Stimulus, tax, and transfer programs shaping demand and incomes.</em> - <em>CPI category histories (BLS)</em><br>
+<em>Baseline to identify structural breaks and regime changes.</em></p>
+<hr>
 </section>
 <section id="forecasts-scenarios-1224-months" class="level3">
 <h3 class="anchored" data-anchor-id="forecasts-scenarios-1224-months">10) Forecasts &amp; Scenarios (12–24 months)</h3>
 <p><strong>What to study:</strong> Conditional paths: if core inflation/energy follows a path, where do costs go?</p>
-<p><strong>Sources:</strong> - Consensus forecasts (e.g., Survey of Professional Forecasters) - <a href="https://www.eia.gov/outlooks/steo/">EIA Short-Term Energy Outlook</a> - Internal model outputs (produced later)</p>
+<p><strong>Sources:</strong> - <em>Consensus forecasts (e.g., Survey of Professional Forecasters)</em><br>
+<em>External benchmarks to anchor scenario ranges.</em> - <a href="https://www.eia.gov/outlooks/steo/">EIA Short-Term Energy Outlook</a><br>
+<em>Energy price paths to condition fuel/utility scenarios.</em> - <em>Internal model outputs (produced later)</em><br>
+<em>Project-specific forecasts for comparison and stress tests.</em></p>
+<hr>
 </section>
 <section id="budget-burden-distribution-who-bears-the-pain" class="level3">
 <h3 class="anchored" data-anchor-id="budget-burden-distribution-who-bears-the-pain">11) Budget Burden &amp; Distribution (who bears the pain)</h3>
 <p><strong>What to study:</strong> Expenditure shares and effective inflation by group.</p>
-<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cex/">BLS Consumer Expenditure Survey (annual/quarterly detail)</a> - <a href="https://www.bls.gov/cpi/tables/relative-importance/home.htm">CPI weights and category shares</a></p>
+<p><strong>Sources:</strong> - <a href="https://www.bls.gov/cex/">BLS Consumer Expenditure Survey (annual/quarterly detail)</a><br>
+<em>Household spending weights to compute effective inflation by group.</em> - <a href="https://www.bls.gov/cpi/tables/relative-importance/home.htm">CPI weights and category shares</a><br>
+<em>Relative importance tables for constructing subgroup baskets.</em></p>
+<hr>
 </section>
-<section id="nowcasting-high-frequency-signals-optional" class="level3">
-<h3 class="anchored" data-anchor-id="nowcasting-high-frequency-signals-optional">12) Nowcasting &amp; High-Frequency Signals (optional)</h3>
+<section id="nowcasting-high-frequency-signals" class="level3">
+<h3 class="anchored" data-anchor-id="nowcasting-high-frequency-signals">12) Nowcasting &amp; High-Frequency Signals</h3>
 <p><strong>What to study:</strong> Weekly/daily signals that anticipate monthly CPI subcomponents.</p>
-<p><strong>Sources:</strong> - EIA weekly fuel - Card-type or scanner data if accessible - Web-scraped price indicators (methodology-dependent)</p>
+<p><strong>Sources:</strong> - <em>EIA weekly fuel</em><br>
+<em>High-frequency gasoline signals ahead of monthly CPI release.</em> - <em>Card-type or scanner data if accessible</em><br>
+<em>Retail micro-signals for food/household goods.</em> - <em>Web-scraped price indicators (methodology-dependent)</em><br>
+<em>Flexible, timely proxies when official data lags.</em></p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
