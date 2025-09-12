@@ -34,7 +34,7 @@ editor : source
 
 Below is the conceptual map of the project. Each **angle** includes **more than 3 temporal data sources** we could analyze (links). This supports a modular site structure where each angle becomes a section with its own time-series models and findings.
 
-![Figure 1: Big Picture (Inflation → U.S. Cost of Living) — eight connected angles linking inflation to household budgets: Food Costs; Shelter; Utilities & Home Energy; Transportation & Fuel; Household Services; Supply Chains & Trade/Dollar; Expectations & Sentiment; Regional & Distributional; Policy & Regimes; Forecasts & Scenarios](bigpicture.jpg)
+![Figure 1: Big Picture (Inflation → U.S. Cost of Living) — ten connected angles linking inflation to household budgets: Food Costs; Shelter; Utilities & Home Energy; Transportation & Fuel; Household Services; Supply Chains & Trade/Dollar; Expectations & Sentiment; Regional & Distributional; Policy & Regimes; Forecasts & Scenarios](pics/bigpicture.jpg)
 
 This analysis will consider the following seven main areas:
 
