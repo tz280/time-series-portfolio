@@ -18,7 +18,7 @@ editor : source
 >  
 > This project asks a simple question with complex answers: **How does inflation transmit into the everyday cost of living in the United States—across food, housing, utilities, transportation, and beyond—over time?**
 
-![](concept.png)
+![](concept.png){width=50% fig-align="center"}
 
 # Topic: What This Project Is (and Is Not)
 
@@ -34,7 +34,7 @@ editor : source
 
 Below is the conceptual map of the project. Each **angle** includes **more than 3 temporal data sources** we could analyze (links). This supports a modular site structure where each angle becomes a section with its own time-series models and findings.
 
-![Figure 1: Big Picture (Inflation → U.S. Cost of Living) — ten connected angles linking inflation to household budgets: Food Costs; Shelter; Utilities & Home Energy; Transportation & Fuel; Household Services; Supply Chains & Trade/Dollar; Expectations & Sentiment; Regional & Distributional; Policy & Regimes; Forecasts & Scenarios](pics/bigpicture.jpg)
+![Figure 1: Big Picture (Inflation → U.S. Cost of Living) — ten connected angles linking inflation to household budgets: Food Costs; Shelter; Utilities & Home Energy; Transportation & Fuel; Household Services; Supply Chains & Trade/Dollar; Expectations & Sentiment; Regional & Distributional; Policy & Regimes; Forecasts & Scenarios](pics/bigpicture.jpg){fig-align="center"}
 
 This analysis will consider the following seven main areas:
 
