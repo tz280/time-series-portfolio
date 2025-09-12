@@ -43,6 +43,7 @@ I have gathered data from the following sources.
 **What to study:** Size/timing of pass-through; category heterogeneity; energy & wage channels.
 
 **Sources:**
+
 - [BLS CPI: Food at home, Food away from home (monthly)](https://www.bls.gov/cpi/)  
   *Official micro-category CPI series to quantify level, trend, and seasonality of food price inflation.*
 - [USDA ERS: Food Price Outlook (monthly narrative & tables)](https://www.ers.usda.gov/data-products/food-price-outlook/)  
@@ -60,6 +61,7 @@ I have gathered data from the following sources.
 **What to study:** CPI shelter’s stickiness; market rent → CPI lags; mortgage rate environment.
 
 **Sources:**
+
 - [BLS CPI: Shelter, Rent of primary residence, Owners’ equivalent rent](https://www.bls.gov/cpi/)  
   *Core measures used in headline/core CPI; anchor for official shelter inflation.*
 - [Zillow/Apartment List Rent Index (monthly)](https://www.zillow.com/research/data/) | [Apartment List](https://www.apartmentlist.com/research/category/data)  
@@ -78,6 +80,7 @@ I have gathered data from the following sources.
 **What to study:** Seasonal structure; energy shocks; weather load (HDD/CDD).
 
 **Sources:**
+
 - [BLS CPI: Electricity, Utility (piped) gas service, Water/sewer/trash](https://www.bls.gov/cpi/)  
   *Consumer price outcomes for utility categories.*
 - [EIA: retail electricity & natural gas prices/consumption](https://www.eia.gov/)  
@@ -94,6 +97,7 @@ I have gathered data from the following sources.
 **What to study:** Oil → gasoline pass-through; asymmetry (rocket-feather); service costs.
 
 **Sources:**
+
 - [BLS CPI: Gasoline, Transportation services (e.g., insurance, maintenance)](https://www.bls.gov/cpi/)  
   *End-user prices for fuel and transport-related services.*
 - [EIA: WTI/Brent, retail gasoline (weekly)](https://www.eia.gov/petroleum/gasdiesel/)  
@@ -108,6 +112,7 @@ I have gathered data from the following sources.
 **What to study:** Price stickiness; trend vs cyclical; income sensitivity.
 
 **Sources:**
+
 - [BLS CPI detailed services (monthly)](https://www.bls.gov/cpi/)  
   *Granular service categories to assess persistence of core inflation.*
 - [FRED health/education price indexes](https://fred.stlouisfed.org/)  
@@ -120,6 +125,7 @@ I have gathered data from the following sources.
 **What to study:** Metro/regional CPI; urban vs non-urban; distributional burden.
 
 **Sources:**
+
 - [BLS regional CPI & selected metro indexes](https://www.bls.gov/regions/)  
   *Official regional inflation measures to compare geography.*
 - [BEA regional price parity (annual with trend context)](https://www.bea.gov/)  
@@ -136,6 +142,7 @@ I have gathered data from the following sources.
 **What to study:** Do inflation expectations predict category moves?
 
 **Sources:**
+
 - [NY Fed Survey of Consumer Expectations (monthly)](https://www.newyorkfed.org/microeconomics/sce)  
   *Household inflation expectations and uncertainty.*
 - [University of Michigan Surveys of Consumers](http://www.sca.isr.umich.edu/)  
@@ -150,6 +157,7 @@ I have gathered data from the following sources.
 **What to study:** Import prices, shipping costs, ag/industrial commodities → retail.
 
 **Sources:**
+
 - [BLS Import/Export Price Indexes](https://www.bls.gov/mxp/)  
   *Border prices to assess external cost pressures and pass-through.*
 - [FAO Food Price Index](https://www.fao.org/worldfoodsituation/foodpricesindex/)  
@@ -166,6 +174,7 @@ I have gathered data from the following sources.
 **What to study:** Before/after analyses, breaks, and time-varying pass-through.
 
 **Sources:**
+
 - [Federal Reserve monetary policy timeline](https://www.federalreserve.gov/monetarypolicy.htm)  
   *Dates/cycles for policy shocks and guidance pivots.*
 - *Fiscal policy events (Treasury/Congressional sources)*  
@@ -180,6 +189,7 @@ I have gathered data from the following sources.
 **What to study:** Conditional paths: if core inflation/energy follows a path, where do costs go?
 
 **Sources:**
+
 - *Consensus forecasts (e.g., Survey of Professional Forecasters)*  
   *External benchmarks to anchor scenario ranges.*
 - [EIA Short-Term Energy Outlook](https://www.eia.gov/outlooks/steo/)  
@@ -194,6 +204,7 @@ I have gathered data from the following sources.
 **What to study:** Expenditure shares and effective inflation by group.
 
 **Sources:**
+
 - [BLS Consumer Expenditure Survey (annual/quarterly detail)](https://www.bls.gov/cex/)  
   *Household spending weights to compute effective inflation by group.*
 - [CPI weights and category shares](https://www.bls.gov/cpi/tables/relative-importance/home.htm)  
@@ -206,6 +217,7 @@ I have gathered data from the following sources.
 **What to study:** Weekly/daily signals that anticipate monthly CPI subcomponents.
 
 **Sources:**
+
 - *EIA weekly fuel*  
   *High-frequency gasoline signals ahead of monthly CPI release.*
 - *Card-type or scanner data if accessible*  
