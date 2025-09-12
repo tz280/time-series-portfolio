@@ -1,5 +1,5 @@
 ---
-title: "Data Sourses"
+title: "Data Sources"
 format:
   html:
     toc: true
@@ -11,10 +11,7 @@ execute:
 editor : source
 ---
 
-## Angles & Candidate Time-Series Sources
-
 I have gathered data from the following sources.
-
 
 - **BLS** — <https://www.bls.gov/>
 - **USDA** — <https://www.usda.gov/>
