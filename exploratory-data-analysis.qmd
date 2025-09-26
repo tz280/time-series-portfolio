@@ -5,6 +5,8 @@ format:
     toc: true
     toc-depth: 3
     link-external-newwindow: true
+code-fold: true
+code-summary: "Show Code"
 execute:
   warning: false
   message: false
