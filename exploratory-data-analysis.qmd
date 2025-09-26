@@ -430,8 +430,15 @@ perform_adf_tests <- function(ts_data, series_names) {
     series_name <- series_names[i]
     ts_obj <- ts_data[[series_name]]
     
-    # Clean data
-    ts_clean <- ts_obj[!is.na(ts_obj)]
+    # Clean data more thoroughly
+    ts_numeric <- as.numeric(ts_obj)  # Convert to numeric first
+    ts_clean <- ts_numeric[!is.na(ts_numeric) & is.finite(ts_numeric)]  # Remove NA and infinite values
+    
+    # Check if we have enough data points
+    if (length(ts_clean) < 10) {
+      cat("✗ Insufficient data for", series_name, "(", length(ts_clean), "valid points)\n")
+      next
+    }
     
     # Perform ADF test
     tryCatch({
@@ -444,13 +451,26 @@ perform_adf_tests <- function(ts_data, series_names) {
         TRUE ~ str_to_title(str_replace_all(series_name, "_", " "))
       )
       
+      # Extract critical values properly
+      critical_values <- adf_test$parameter
+      if (is.null(critical_values) || length(critical_values) == 0) {
+        # Use standard critical values if not available
+        crit_1pct <- -3.43
+        crit_5pct <- -2.86
+        crit_10pct <- -2.57
+      } else {
+        crit_1pct <- ifelse(length(critical_values) >= 1, critical_values[1], -3.43)
+        crit_5pct <- ifelse(length(critical_values) >= 2, critical_values[2], -2.86)
+        crit_10pct <- ifelse(length(critical_values) >= 3, critical_values[3], -2.57)
+      }
+      
       adf_results <<- rbind(adf_results, data.frame(
         Series = display_name,
         ADF_Statistic = round(adf_test$statistic, 4),
         P_Value = round(adf_test$p.value, 4),
-        Critical_Value_1pct = round(attr(adf_test$statistic, "names"), 4),
-        Critical_Value_5pct = round(attr(adf_test$statistic, "names"), 4), 
-        Critical_Value_10pct = round(attr(adf_test$statistic, "names"), 4),
+        Critical_Value_1pct = round(crit_1pct, 4),
+        Critical_Value_5pct = round(crit_5pct, 4), 
+        Critical_Value_10pct = round(crit_10pct, 4),
         Is_Stationary_5pct = adf_test$p.value < 0.05,
         Is_Stationary_1pct = adf_test$p.value < 0.01
       ))
@@ -461,17 +481,20 @@ perform_adf_tests <- function(ts_data, series_names) {
       
     }, error = function(e) {
       cat("✗ Error testing", series_name, ":", e$message, "\n")
+      
+      # Print diagnostic info
+      cat("   Data type:", class(ts_clean), "\n")
+      cat("   Data length:", length(ts_clean), "\n")
+      cat("   Data range:", paste(round(range(ts_clean, na.rm = TRUE), 2), collapse = " to "), "\n")
+      cat("   First few values:", paste(head(ts_clean, 5), collapse = ", "), "\n")
     })
   }
   
   return(adf_results)
 }
 
-# Perform ADF tests
+# Perform ADF tests 
 adf_results <- perform_adf_tests(ts_data, available_vars)
-
-cat("\nAUGMENTED DICKEY-FULLER TEST RESULTS:\n")
-print(adf_results)
 ```
 ```{r}
 # MAKING SERIES STATIONARY 

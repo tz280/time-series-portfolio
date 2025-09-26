@@ -1,0 +1,633 @@
+---
+title: "Data Visualization"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    link-external-newwindow: true
+execute:
+  warning: false
+  message: false
+editor : source
+---
+
+```{r}
+
+# Load libraries
+library(tidyverse)
+library(lubridate)
+library(plotly)
+library(ggplot2)
+library(forecast)
+library(tseries)
+library(gridExtra)
+library(viridis)
+library(httr)
+library(jsonlite)
+```
+```{r}
+# Set theme
+theme_set(theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(size = 11),
+    axis.text = element_text(size = 10)
+  ))
+
+
+# Create data directory
+if (!dir.exists("data")) {
+  dir.create("data")
+  cat("Created 'data' directory\n")
+}
+```
+```{r}
+
+cat("=== FOOD INFLATION DATA COLLECTION ===\n")
+
+# Food-related FRED series IDs 
+food_series <- list(
+  list(id = "CUSR0000SAF11", name = "Food at Home CPI"),
+  list(id = "CUSR0000SEFV", name = "Food Away from Home CPI"),
+  list(id = "CUSR0000SAF1", name = "Food and Beverages Total CPI"),
+  list(id = "CPIAUCSL", name = "Overall CPI (All Items)")
+)
+
+# Download all food-related data
+food_data_list <- list()
+
+# Check what data we successfully downloaded
+successful_downloads <- names(food_data_list)
+cat("Successfully downloaded", length(successful_downloads), "out of", length(food_series), "series:\n")
+for (id in successful_downloads) {
+  series_name <- food_series[[which(sapply(food_series, function(x) x$id == id))]]$name
+  cat("✓", id, "-", series_name, "\n")
+}
+```
+```{r}
+
+# Function to load and clean FRED CSV files
+load_fred_csv <- function(file_path, series_name) {
+  cat("Loading", series_name, "from", file_path, "...\n")
+  
+  tryCatch({
+    # Read the CSV file
+    data <- read_csv(file_path, show_col_types = FALSE)
+    
+    # Handle different CSV formats from FRED
+    if (ncol(data) >= 2) {
+      # Check column names and standardize
+      col_names <- names(data)
+      
+      # Find date column
+      date_col <- col_names[grepl("DATE|date|Date", col_names)][1]
+      if (is.na(date_col)) date_col <- col_names[1]  # First column if no DATE found
+      
+      # Find value column  
+      value_col <- col_names[!col_names %in% date_col][1]  # First non-date column
+      
+      # Select and rename columns
+      data <- data %>% 
+        select(date = all_of(date_col), value = all_of(value_col))
+      
+      # Clean and convert data
+      data <- data %>%
+        mutate(
+          date = as.Date(date),
+          value = as.numeric(as.character(value))
+        ) %>%
+        filter(!is.na(date), !is.na(value), value != ".", !is.infinite(value)) %>%
+        arrange(date)
+      
+      cat("✓ Loaded", nrow(data), "observations for", series_name, "\n")
+      cat("  Date range:", min(data$date), "to", max(data$date), "\n")
+      
+      return(data)
+    } else {
+      cat("✗ Unexpected file format for", series_name, "\n")
+      return(NULL)
+    }
+    
+  }, error = function(e) {
+    cat("✗ Error loading", series_name, ":", e$message, "\n")
+    return(NULL)
+  })
+}
+
+# Define the data files we expect
+food_data_files <- list(
+  list(path = "data/CUSR0000SAF11.csv", name = "Food at Home CPI", var_name = "food_at_home"),
+  list(path = "data/CUSR0000SEFV.csv", name = "Food Away from Home CPI", var_name = "food_away_home"),
+  list(path = "data/CPIAUCSL.csv", name = "Overall CPI (All Items)", var_name = "cpi_all")
+)
+
+# Check for additional files
+if (file.exists("data/CUSR0000SAF1.csv")) {
+  food_data_files <- append(food_data_files, 
+    list(list(path = "data/CUSR0000SAF1.csv", name = "Food and Beverages Total CPI", var_name = "food_total")), 
+    after = 2)
+}
+
+# Load all available files
+loaded_data <- list()
+for (i in 1:length(food_data_files)) {
+  file_info <- food_data_files[[i]]
+  
+  if (file.exists(file_info$path)) {
+    data <- load_fred_csv(file_info$path, file_info$name)
+    if (!is.null(data)) {
+      # Rename the value column to the appropriate variable name
+      data <- data %>% rename(!!file_info$var_name := value)
+      loaded_data[[file_info$var_name]] <- data
+    }
+  } else {
+    cat("File not found:", file_info$path, "\n")
+  }
+}
+
+cat("\n")
+# Combine all loaded data
+if (length(loaded_data) >= 2) {
+  cat("Combining", length(loaded_data), "data series...\n")
+  
+  # Start with the first dataset
+  combined_food_data <- loaded_data[[1]]
+  
+  # Join other datasets
+  for (i in 2:length(loaded_data)) {
+    combined_food_data <- combined_food_data %>%
+      full_join(loaded_data[[i]], by = "date")
+  }
+  
+  # If we don't have food_total but have both components, calculate it
+  if (!"food_total" %in% names(combined_food_data) && 
+      all(c("food_at_home", "food_away_home") %in% names(combined_food_data))) {
+    
+    cat("Calculating food_total as average of food_at_home and food_away_home...\n")
+    combined_food_data <- combined_food_data %>%
+      mutate(food_total = (food_at_home + food_away_home) / 2)
+  }
+  
+  # Sort by date and remove rows with all missing values
+  combined_food_data <- combined_food_data %>%
+    arrange(date) %>%
+    filter(if_any(-date, ~ !is.na(.x)))
+  
+  cat("✓ Combined dataset created with", nrow(combined_food_data), "observations\n")
+  cat("Variables:", paste(names(combined_food_data), collapse = ", "), "\n")
+  
+} else {
+  stop("ERROR: Need at least 2 data series to proceed. Please check your data files in the 'data/' folder.")
+}
+```
+
+```{r}
+
+cat("\n=== STEP 3: DATA QUALITY CHECK ===\n")
+
+# Summary statistics
+data_summary <- combined_food_data %>%
+  summarise(
+    observations = n(),
+    date_start = min(date, na.rm = TRUE),
+    date_end = max(date, na.rm = TRUE),
+    years_covered = round(as.numeric(difftime(max(date, na.rm = TRUE), min(date, na.rm = TRUE), units = "days")) / 365.25, 1)
+  )
+
+# Check completeness for each variable
+available_vars <- names(combined_food_data)[names(combined_food_data) != "date"]
+completeness <- combined_food_data %>%
+  summarise(across(all_of(available_vars), ~ round(sum(!is.na(.x)) / n() * 100, 1), .names = "{.col}_complete"))
+
+print("Data Summary:")
+print(data_summary)
+print("Data Completeness (%):")
+print(completeness)
+
+cat("\nFirst few rows:\n")
+print(head(combined_food_data, 5))
+
+cat("\nLast few rows:\n") 
+print(tail(combined_food_data, 3))
+```
+```{r}
+
+create_plotly_dashboard <- function(data) {
+  
+  # Get available columns (excluding date)
+  available_cols <- names(data)[names(data) != "date"]
+  
+  # Calculate year-over-year inflation rates
+  inflation_data <- data %>%
+    arrange(date) %>%
+    mutate(
+      across(all_of(available_cols), 
+             ~ (. / lag(., 12) - 1) * 100, 
+             .names = "{.col}_yoy")
+    ) %>%
+    filter(if_any(ends_with("_yoy"), ~ !is.na(.x)))
+  
+  # Color palette
+  colors <- c('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd')
+  
+  # PLOT 1: Price Index Levels
+  p1 <- plot_ly(type = 'scatter', mode = 'lines')
+  
+  for (i in seq_along(available_cols)) {
+    col_name <- available_cols[i]
+    display_name <- case_when(
+      col_name == "food_at_home" ~ "Food at Home",
+      col_name == "food_away_home" ~ "Food Away from Home",
+      col_name == "food_total" ~ "Food Total",
+      col_name == "cpi_all" ~ "Overall CPI",
+      TRUE ~ str_to_title(str_replace_all(col_name, "_", " "))
+    )
+    
+    p1 <- p1 %>% 
+      add_trace(data = data, x = ~date, y = data[[col_name]], 
+                name = display_name,
+                line = list(color = colors[i], width = 2),
+                hovertemplate = paste('<b>', display_name, '</b><br>',
+                                     'Date: %{x}<br>',
+                                     'Value: %{y:.1f}<br>',
+                                     '<extra></extra>'))
+  }
+  
+  p1 <- p1 %>%
+    layout(
+      title = "Price Index Levels",
+      xaxis = list(title = "Date"),
+      yaxis = list(title = "Index Value"),
+      showlegend = TRUE,
+      shapes = list(
+        list(
+          type = "line",
+          x0 = as.Date("2020-03-01"), x1 = as.Date("2020-03-01"),
+          y0 = 0, y1 = 1,
+          yref = "paper",
+          line = list(color = "red", dash = "dot", width = 1)
+        )
+      )
+    )
+  
+  # PLOT 2: YoY Inflation Rates
+  p2 <- plot_ly(type = 'scatter', mode = 'lines')
+  
+  yoy_cols <- paste0(available_cols, "_yoy")
+  for (i in seq_along(yoy_cols)) {
+    col_name <- yoy_cols[i]
+    if (col_name %in% names(inflation_data)) {
+      orig_name <- available_cols[i]
+      display_name <- case_when(
+        orig_name == "food_at_home" ~ "Food at Home",
+        orig_name == "food_away_home" ~ "Food Away",
+        orig_name == "food_total" ~ "Food Total",
+        orig_name == "cpi_all" ~ "Overall CPI",
+        TRUE ~ str_to_title(str_replace_all(orig_name, "_", " "))
+      )
+      
+      p2 <- p2 %>% 
+        add_trace(data = inflation_data, x = ~date, y = inflation_data[[col_name]], 
+                  name = paste(display_name, "YoY%"),
+                  line = list(color = colors[i], width = 2),
+                  hovertemplate = paste('<b>', display_name, '</b><br>',
+                                       'Date: %{x}<br>',
+                                       'YoY Change: %{y:.1f}%<br>',
+                                       '<extra></extra>'))
+    }
+  }
+  
+  p2 <- p2 %>%
+    layout(
+      title = "Year-over-Year Inflation Rates (%)",
+      xaxis = list(title = "Date"),
+      yaxis = list(title = "YoY % Change"),
+      showlegend = TRUE,
+      shapes = list(
+        list(
+          type = "line",
+          x0 = 0, x1 = 1,
+          xref = "paper",
+          y0 = 0, y1 = 0,
+          line = list(color = "gray", dash = "dash", width = 1)
+        ),
+        list(
+          type = "line",
+          x0 = as.Date("2020-03-01"), x1 = as.Date("2020-03-01"),
+          y0 = 0, y1 = 1,
+          yref = "paper",
+          line = list(color = "red", dash = "dot", width = 1)
+        )
+      )
+    )
+  
+  # PLOT 3: Indexed trends (first value = 100)
+  indexed_data <- data %>%
+    mutate(across(all_of(available_cols), 
+                  ~ (. / first(., na_rm = TRUE)) * 100, 
+                  .names = "{.col}_idx"))
+  
+  p3 <- plot_ly(type = 'scatter', mode = 'lines')
+  
+  idx_cols <- paste0(available_cols, "_idx")
+  for (i in seq_along(idx_cols)) {
+    col_name <- idx_cols[i]
+    orig_name <- available_cols[i]
+    display_name <- case_when(
+      orig_name == "food_at_home" ~ "Food at Home",
+      orig_name == "food_away_home" ~ "Food Away",
+      orig_name == "food_total" ~ "Food Total",
+      orig_name == "cpi_all" ~ "Overall CPI",
+      TRUE ~ str_to_title(str_replace_all(orig_name, "_", " "))
+    )
+    
+    p3 <- p3 %>% 
+      add_trace(data = indexed_data, x = ~date, y = indexed_data[[col_name]], 
+                name = paste(display_name, "(Index)"),
+                line = list(color = colors[i], width = 2),
+                hovertemplate = paste('<b>', display_name, '</b><br>',
+                                     'Date: %{x}<br>',
+                                     'Index: %{y:.1f}<br>',
+                                     '<extra></extra>'))
+  }
+  
+  p3 <- p3 %>%
+    layout(
+      title = "Cumulative Price Changes (First Value = 100)",
+      xaxis = list(title = "Date"),
+      yaxis = list(title = "Index (Base = 100)"),
+      showlegend = TRUE,
+      shapes = list(
+        list(
+          type = "line",
+          x0 = 0, x1 = 1,
+          xref = "paper",
+          y0 = 100, y1 = 100,
+          line = list(color = "gray", dash = "dash", width = 1)
+        ),
+        list(
+          type = "line",
+          x0 = as.Date("2020-03-01"), x1 = as.Date("2020-03-01"),
+          y0 = 0, y1 = 1,
+          yref = "paper",
+          line = list(color = "red", dash = "dot", width = 1)
+        )
+      )
+    )
+  
+  # PLOT 4: Recent trends (last 3 years)
+  recent_data <- inflation_data %>%
+    filter(date >= max(date, na.rm = TRUE) - years(3))
+  
+  p4 <- plot_ly(type = 'scatter', mode = 'lines+markers')
+  
+  if (nrow(recent_data) > 0) {
+    for (i in seq_along(yoy_cols)) {
+      col_name <- yoy_cols[i]
+      if (col_name %in% names(recent_data)) {
+        orig_name <- available_cols[i]
+        display_name <- case_when(
+          orig_name == "food_at_home" ~ "Food at Home",
+          orig_name == "food_away_home" ~ "Food Away",
+          orig_name == "food_total" ~ "Food Total", 
+          orig_name == "cpi_all" ~ "Overall CPI",
+          TRUE ~ str_to_title(str_replace_all(orig_name, "_", " "))
+        )
+        
+        p4 <- p4 %>% 
+          add_trace(data = recent_data, x = ~date, y = recent_data[[col_name]], 
+                    name = display_name,
+                    line = list(color = colors[i], width = 2),
+                    marker = list(size = 4, color = colors[i]),
+                    hovertemplate = paste('<b>', display_name, '</b><br>',
+                                         'Date: %{x}<br>',
+                                         'YoY Change: %{y:.1f}%<br>',
+                                         '<extra></extra>'))
+      }
+    }
+  }
+  
+  p4 <- p4 %>%
+    layout(
+      title = "Recent 3-Year Inflation Trend",
+      xaxis = list(title = "Date"),
+      yaxis = list(title = "YoY % Change"),
+      showlegend = TRUE,
+      shapes = list(
+        list(
+          type = "line",
+          x0 = 0, x1 = 1,
+          xref = "paper",
+          y0 = 0, y1 = 0,
+          line = list(color = "gray", dash = "dash", width = 1)
+        )
+      )
+    )
+  
+  #subplot() 
+  combined_plot <- subplot(
+    subplot(p1, p2, nrows = 1, shareY = FALSE, titleX = TRUE, titleY = TRUE),
+    subplot(p3, p4, nrows = 1, shareY = FALSE, titleX = TRUE, titleY = TRUE),
+    nrows = 2, shareX = FALSE, titleX = TRUE, titleY = TRUE,
+    heights = c(0.5, 0.5)
+  ) %>%
+  layout(
+    title = list(
+      text = "<b>Food Inflation Dashboard: Real CPI Data Analysis</b><br><sup>Interactive analysis of food price trends and inflation rates</sup>",
+      font = list(size = 16)
+    ),
+    template = "plotly_white",
+    height = 800,
+    showlegend = FALSE,
+    annotations = list(
+      list(x = 0.2, y = 1.02, xref = "paper", yref = "paper",
+           text = "COVID-19", showarrow = FALSE, font = list(color = "red", size = 10))
+    )
+  )
+  
+  return(combined_plot)
+}
+
+plotly_dashboard <- create_plotly_dashboard(combined_food_data)
+print(plotly_dashboard)
+```
+
+```{r}
+# GGPLOT2 Heatmap - Food Inflation Analysis
+
+cat("Creating ggplot2 heatmap...\n")
+
+create_ggplot_heatmap <- function(data) {
+  
+  # Get available columns
+  available_cols <- names(data)[names(data) != "date"]
+  
+  # Calculate year-over-year changes
+  heatmap_data <- data %>%
+    arrange(date) %>%
+    mutate(
+      across(all_of(available_cols), 
+             ~ (. / lag(., 12) - 1) * 100, 
+             .names = "{.col}_yoy")
+    ) %>%
+    filter(if_any(ends_with("_yoy"), ~ !is.na(.x))) %>%
+    select(date, ends_with("_yoy")) %>%
+    mutate(
+      year = year(date),
+      month = month(date, label = TRUE, abbr = TRUE)
+    ) %>%
+    pivot_longer(cols = ends_with("_yoy"), names_to = "category", values_to = "inflation_rate") %>%
+    mutate(
+      category_clean = case_when(
+        category == "food_at_home_yoy" ~ "Food at Home",
+        category == "food_away_home_yoy" ~ "Food Away from Home",
+        category == "food_total_yoy" ~ "Food Total",
+        category == "cpi_all_yoy" ~ "Overall CPI",
+        TRUE ~ str_remove(category, "_yoy") %>% str_to_title()
+      ),
+      period = case_when(
+        year <= 2019 ~ "Pre-COVID (2011-2019)",
+        year %in% 2020:2022 ~ "COVID Era (2020-2022)",
+        year >= 2023 ~ "Post-COVID (2023+)",
+        TRUE ~ "Other"
+      )
+    ) %>%
+    filter(!is.na(inflation_rate))
+  
+  if (nrow(heatmap_data) == 0) {
+    return(ggplot() + theme_void() + labs(title = "Insufficient data for heatmap"))
+  }
+  
+  # Create the heatmap
+  g <- ggplot(heatmap_data, aes(x = month, y = category_clean, fill = inflation_rate)) +
+    geom_tile(color = "white", size = 0.3) +
+    geom_text(aes(label = ifelse(abs(inflation_rate) > 5, paste0(round(inflation_rate, 1), "%"), "")), 
+              color = "black", size = 3, fontface = "bold") +
+    scale_fill_gradient2(
+      low = "#2166AC", mid = "white", high = "#B2182B",
+      midpoint = 0, name = "YoY %\nChange",
+      limits = c(-15, 25), oob = scales::squish
+    ) +
+    facet_wrap(~ period, ncol = 3) +
+    labs(
+      title = "Food Inflation Heatmap: Year-over-Year Changes by Month and Period",
+      subtitle = "Real CPI data showing seasonal patterns and period differences in food price inflation",
+      x = "Month",
+      y = "Category", 
+      caption = "Data: Federal Reserve Economic Data (FRED) | Text shows values >5% or <-5%"
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+      axis.text.y = element_text(size = 11),
+      strip.background = element_rect(fill = "lightgray", alpha = 0.8),
+      strip.text = element_text(face = "bold", size = 11),
+      plot.title = element_text(size = 16, face = "bold"),
+      plot.subtitle = element_text(size = 12),
+      legend.position = "right"
+    )
+  
+  return(g)
+}
+
+# Create and display the heatmap
+ggplot_heatmap <- create_ggplot_heatmap(combined_food_data)
+print(ggplot_heatmap)
+
+cat("✓ ggplot2 heatmap created successfully\n")
+```
+
+```{r}
+create_ggplot_volatility <- function(data) {
+  
+  # Get available columns
+  available_cols <- names(data)[names(data) != "date"]
+  
+  if (length(available_cols) == 0) {
+    return(ggplot() + theme_void() + labs(title = "No data available for volatility analysis"))
+  }
+  
+  # Calculate price changes and rolling volatility
+  volatility_data <- data %>%
+    arrange(date) %>%
+    mutate(
+      # Monthly price changes
+      across(all_of(available_cols), 
+             ~ (. / lag(.) - 1) * 100, 
+             .names = "{.col}_change")
+    )
+  
+  # Calculate rolling volatility manually for each change column
+  change_cols <- paste0(available_cols, "_change")
+  
+  for (col in change_cols) {
+    if (col %in% names(volatility_data)) {
+      # Use rollapply instead of rollsd
+      volatility_data[[paste0(col, "_vol")]] <- zoo::rollapply(
+        volatility_data[[col]], 
+        width = 12, 
+        FUN = function(x) sd(x, na.rm = TRUE), 
+        fill = NA, 
+        align = "right",
+        partial = FALSE
+      )
+    }
+  }
+  
+  # Continue with the rest of the analysis
+  volatility_data <- volatility_data %>%
+    select(date, ends_with("_vol")) %>%
+    filter(if_any(ends_with("_vol"), ~ !is.na(.x))) %>%
+    pivot_longer(cols = -date, names_to = "category", values_to = "volatility") %>%
+    mutate(
+      category_clean = case_when(
+        str_detect(category, "food_at_home") ~ "Food at Home",
+        str_detect(category, "food_away_home") ~ "Food Away from Home",
+        str_detect(category, "food_total") ~ "Food Total", 
+        str_detect(category, "cpi_all") ~ "Overall CPI",
+        TRUE ~ str_remove_all(category, "_change_vol") %>% str_to_title()
+      )
+    ) %>%
+    filter(!is.na(volatility))
+  
+  if (nrow(volatility_data) == 0) {
+    return(ggplot() + theme_void() + labs(title = "Insufficient data for volatility analysis"))
+  }
+  
+  # Select colors based on available categories
+  n_categories <- length(unique(volatility_data$category_clean))
+  colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd")[1:n_categories]
+  
+  # Create the volatility plot
+  g <- ggplot(volatility_data, aes(x = date, y = volatility, color = category_clean)) +
+    geom_line(size = 1.2, alpha = 0.8) +
+    geom_smooth(method = "loess", span = 0.3, se = TRUE, alpha = 0.2, size = 0.8) +
+    scale_color_manual(values = colors, name = "Category") +
+    labs(
+      title = "Food Price Volatility: Rolling 12-Month Standard Deviation",
+      subtitle = "Measuring price stability across food categories over time",
+      x = "Date",
+      y = "Monthly Price Change Volatility (%)",
+      caption = "Higher volatility = more unpredictable price changes | Smooth lines show trends"
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position = "bottom",
+      plot.title = element_text(size = 16, face = "bold"),
+      plot.subtitle = element_text(size = 12)
+    ) +
+    geom_vline(xintercept = as.Date("2020-03-01"), linetype = "dashed", color = "red", alpha = 0.7) +
+    geom_vline(xintercept = as.Date("2008-09-01"), linetype = "dashed", color = "blue", alpha = 0.7) +
+    annotate("text", x = as.Date("2020-06-01"), y = max(volatility_data$volatility, na.rm = TRUE) * 0.9, 
+             label = "COVID-19", color = "red", size = 3.5) +
+    annotate("text", x = as.Date("2009-03-01"), y = max(volatility_data$volatility, na.rm = TRUE) * 0.8, 
+             label = "Financial Crisis", color = "blue", size = 3.5)
+  
+  return(g)
+}
+
+# Create and display volatility analysis
+ggplot_volatility <- create_ggplot_volatility(combined_food_data)
+print(ggplot_volatility)
+```
