@@ -1,0 +1,872 @@
+---
+title: "Exploratory Data Analysis"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    link-external-newwindow: true
+execute:
+  warning: false
+  message: false
+editor : source
+---
+
+```{r}
+# Food Inflation Exploratory Data Analysis (EDA) - Complete
+# Time Series Analysis with Components, Lag Plots, Decomposition, ACF/PACF, ADF Tests
+
+# Required packages
+required_packages <- c(
+  "tidyverse", "lubridate", "ggplot2", "forecast", "tseries", 
+  "gridExtra", "viridis", "zoo", "TTR"
+)
+
+# Install missing packages
+new_packages <- required_packages[!(required_packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) {
+  cat("Installing packages:", paste(new_packages, collapse = ", "), "\n")
+  install.packages(new_packages)
+}
+
+# Load libraries
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(forecast)
+library(tseries)
+library(gridExtra)
+library(viridis)
+library(zoo)
+library(TTR)
+
+# Set theme
+theme_set(theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(size = 11),
+    axis.text = element_text(size = 10)
+  ))
+
+cat("✓ Libraries loaded\n")
+```
+```{r}
+# Load data function
+load_fred_csv <- function(file_path, series_name) {
+  cat("Loading", series_name, "from", file_path, "...\n")
+  
+  tryCatch({
+    data <- read_csv(file_path, show_col_types = FALSE)
+    
+    # Handle different CSV formats
+    col_names <- names(data)
+    date_col <- col_names[grepl("DATE|date|Date", col_names)][1]
+    if (is.na(date_col)) date_col <- col_names[1]
+    value_col <- col_names[!col_names %in% date_col][1]
+    
+    data <- data %>% 
+      select(date = all_of(date_col), value = all_of(value_col)) %>%
+      mutate(
+        date = as.Date(date),
+        value = as.numeric(as.character(value))
+      ) %>%
+      filter(!is.na(date), !is.na(value)) %>%
+      arrange(date)
+    
+    cat("✓ Loaded", nrow(data), "observations\n")
+    return(data)
+    
+  }, error = function(e) {
+    cat("✗ Error loading", series_name, ":", e$message, "\n")
+    return(NULL)
+  })
+}
+
+# Load the three CSV files
+food_data_files <- list(
+  list(path = "data/CUSR0000SAF11.csv", name = "Food at Home CPI", var_name = "food_at_home"),
+  list(path = "data/CUSR0000SEFV.csv", name = "Food Away from Home CPI", var_name = "food_away_home"),
+  list(path = "data/CPIAUCSL.csv", name = "Overall CPI", var_name = "cpi_all")
+)
+
+# Load and combine data
+loaded_data <- list()
+for (i in 1:length(food_data_files)) {
+  file_info <- food_data_files[[i]]
+  
+  if (file.exists(file_info$path)) {
+    data <- load_fred_csv(file_info$path, file_info$name)
+    if (!is.null(data)) {
+      data <- data %>% rename(!!file_info$var_name := value)
+      loaded_data[[file_info$var_name]] <- data
+    }
+  }
+}
+
+# Combine datasets
+combined_food_data <- loaded_data[[1]]
+for (i in 2:length(loaded_data)) {
+  combined_food_data <- combined_food_data %>%
+    full_join(loaded_data[[i]], by = "date")
+}
+
+# Clean and prepare data
+combined_food_data <- combined_food_data %>%
+  arrange(date) %>%
+  filter(if_any(-date, ~ !is.na(.x)))
+
+cat("✓ Combined dataset:", nrow(combined_food_data), "observations\n")
+cat("Date range:", min(combined_food_data$date), "to", max(combined_food_data$date), "\n\n")
+```
+```{r}
+# TIME SERIES PLOTS AND COMPONENT IDENTIFICATION
+
+# Create time series objects
+create_ts_objects <- function(data) {
+  available_cols <- names(data)[names(data) != "date"]
+  ts_list <- list()
+  
+  # Determine start date and frequency
+  start_year <- year(min(data$date))
+  start_month <- month(min(data$date))
+  
+  for (col in available_cols) {
+    ts_list[[col]] <- ts(data[[col]], start = c(start_year, start_month), frequency = 12)
+  }
+  
+  return(ts_list)
+}
+
+ts_data <- create_ts_objects(combined_food_data)
+
+# Function to analyze time series components
+analyze_ts_components <- function(ts_obj, series_name) {
+  
+  # Convert to data frame for ggplot
+  ts_df <- data.frame(
+    date = as.Date(time(ts_obj)),
+    value = as.numeric(ts_obj)
+  )
+  
+  # Create comprehensive time series plot
+  p <- ggplot(ts_df, aes(x = date, y = value)) +
+    geom_line(color = "#1f77b4", size = 1, alpha = 0.8) +
+    geom_smooth(method = "loess", span = 0.3, color = "#ff7f0e", size = 1.2, alpha = 0.7) +
+    labs(
+      title = paste("Time Series Analysis:", series_name),
+      subtitle = "Blue line: Original series | Orange line: Trend (LOESS smoothing)",
+      x = "Date",
+      y = "Consumer Price Index",
+      caption = "Data: Federal Reserve Economic Data (FRED)"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(size = 16, face = "bold"),
+      plot.subtitle = element_text(size = 12)
+    ) +
+    geom_vline(xintercept = as.Date("2020-03-01"), linetype = "dashed", color = "red", alpha = 0.6) +
+    geom_vline(xintercept = as.Date("2008-09-01"), linetype = "dashed", color = "blue", alpha = 0.6) +
+    annotate("text", x = as.Date("2020-06-01"), y = max(ts_df$value) * 0.95, 
+             label = "COVID-19", color = "red", size = 3, angle = 90) +
+    annotate("text", x = as.Date("2009-01-01"), y = max(ts_df$value) * 0.90, 
+             label = "Financial Crisis", color = "blue", size = 3, angle = 90)
+  
+  return(p)
+}
+
+# Create time series plots for each variable
+available_vars <- names(ts_data)
+ts_plots <- list()
+
+for (i in 1:length(available_vars)) {
+  var_name <- available_vars[i]
+  display_name <- case_when(
+    var_name == "food_at_home" ~ "Food at Home CPI",
+    var_name == "food_away_home" ~ "Food Away from Home CPI",
+    var_name == "cpi_all" ~ "Overall CPI (All Items)",
+    TRUE ~ str_to_title(str_replace_all(var_name, "_", " "))
+  )
+  
+  ts_plots[[i]] <- analyze_ts_components(ts_data[[var_name]], display_name)
+  print(ts_plots[[i]])
+}
+
+cat("✓ Time series plots created\n")
+```
+```{r}
+# LAG PLOTS ANALYSIS
+create_lag_plots <- function(ts_obj, series_name, max_lags = 4) {
+  
+  # Create lag plot data
+  ts_df <- data.frame(value = as.numeric(ts_obj))
+  
+  for(lag in 1:max_lags) {
+    ts_df[[paste0("lag_", lag)]] <- stats::lag(ts_obj, -lag)
+  }
+  
+  # Convert to long format
+  lag_long <- ts_df %>%
+    pivot_longer(cols = starts_with("lag_"), names_to = "lag_period", values_to = "lagged_value") %>%
+    mutate(lag_num = as.numeric(str_extract(lag_period, "\\d+"))) %>%
+    filter(!is.na(lagged_value))
+  
+  p <- ggplot(lag_long, aes(x = lagged_value, y = value)) +
+    geom_point(alpha = 0.6, color = "#2E8B57", size = 1.5) +
+    geom_smooth(method = "lm", color = "#FF6347", size = 1, se = TRUE) +
+    facet_wrap(~ paste("Lag", lag_num), scales = "free", ncol = 2) +
+    labs(
+      title = paste("Lag Plots Analysis:", series_name),
+      subtitle = "Scatter plots of current values vs lagged values (autocorrelation visualization)",
+      x = "Lagged Value",
+      y = "Current Value",
+      caption = "Red line shows linear relationship | Strong linear relationship indicates high autocorrelation"
+    ) +
+    theme_minimal() +
+    theme(
+      strip.background = element_rect(fill = "lightgray", alpha = 0.5),
+      strip.text = element_text(face = "bold"),
+      plot.title = element_text(size = 16, face = "bold")
+    )
+  
+  return(p)
+}
+
+# Create lag plots for each series
+for (i in 1:length(available_vars)) {
+  var_name <- available_vars[i]
+  display_name <- case_when(
+    var_name == "food_at_home" ~ "Food at Home CPI",
+    var_name == "food_away_home" ~ "Food Away from Home CPI", 
+    var_name == "cpi_all" ~ "Overall CPI (All Items)",
+    TRUE ~ str_to_title(str_replace_all(var_name, "_", " "))
+  )
+  
+  lag_plot <- create_lag_plots(ts_data[[var_name]], display_name)
+  print(lag_plot)
+}
+
+cat("✓ Lag plots created\n")
+```
+```{r}
+# TIME SERIES DECOMPOSITION
+
+perform_decomposition <- function(ts_obj, series_name, type = "multiplicative") {
+  
+  cat("Decomposing", series_name, "using", type, "model...\n")
+  
+  # Perform decomposition
+  tryCatch({
+    if(type == "multiplicative") {
+      decomp <- decompose(ts_obj, type = "multiplicative")
+    } else {
+      decomp <- decompose(ts_obj, type = "additive")
+    }
+    
+    # Create decomposition plot
+    decomp_df <- data.frame(
+      date = as.Date(time(ts_obj)),
+      observed = as.numeric(decomp$x),
+      trend = as.numeric(decomp$trend),
+      seasonal = as.numeric(decomp$seasonal),
+      random = as.numeric(decomp$random)
+    ) %>%
+      pivot_longer(cols = -date, names_to = "component", values_to = "value") %>%
+      mutate(
+        component = factor(component, levels = c("observed", "trend", "seasonal", "random"),
+                          labels = c("Observed", "Trend", "Seasonal", "Random"))
+      )
+    
+    p <- ggplot(decomp_df, aes(x = date, y = value)) +
+      geom_line(color = "#1f77b4", size = 0.8) +
+      facet_wrap(~ component, scales = "free_y", ncol = 1) +
+      labs(
+        title = paste("Time Series Decomposition:", series_name),
+        subtitle = paste("Decomposition Type:", stringr::str_to_title(type)),
+        x = "Date",
+        y = "Component Value",
+        caption = "Classical decomposition separating trend, seasonal, and random components"
+      ) +
+      theme_minimal() +
+      theme(
+        strip.background = element_rect(fill = "lightblue", alpha = 0.3),
+        strip.text = element_text(face = "bold", size = 12),
+        plot.title = element_text(size = 16, face = "bold")
+      )
+    
+    return(list(plot = p, decomposition = decomp, success = TRUE))
+    
+  }, error = function(e) {
+    cat("Error in decomposition:", e$message, "\n")
+    return(list(plot = NULL, decomposition = NULL, success = FALSE))
+  })
+}
+
+# Perform decomposition for each series (try multiplicative first)
+decomposition_results <- list()
+
+for (i in 1:length(available_vars)) {
+  var_name <- available_vars[i]
+  display_name <- case_when(
+    var_name == "food_at_home" ~ "Food at Home CPI",
+    var_name == "food_away_home" ~ "Food Away from Home CPI",
+    var_name == "cpi_all" ~ "Overall CPI (All Items)",
+    TRUE ~ str_to_title(str_replace_all(var_name, "_", " "))
+  )
+  
+  # Try multiplicative first
+  mult_result <- perform_decomposition(ts_data[[var_name]], display_name, "multiplicative")
+  
+  if (mult_result$success) {
+    decomposition_results[[var_name]] <- mult_result
+    print(mult_result$plot)
+  } else {
+    # Try additive if multiplicative fails
+    cat("Multiplicative failed, trying additive for", display_name, "\n")
+    add_result <- perform_decomposition(ts_data[[var_name]], display_name, "additive")
+    
+    if (add_result$success) {
+      decomposition_results[[var_name]] <- add_result
+      print(add_result$plot)
+    } else {
+      cat("Both decomposition methods failed for", display_name, "\n")
+    }
+  }
+}
+
+cat("✓ Time series decomposition completed\n")
+```
+```{r}
+# ACF AND PACF ANALYSIS
+
+create_acf_pacf_analysis <- function(ts_obj, series_name, max_lag = 36) {
+  
+  # Calculate ACF and PACF
+  acf_result <- acf(ts_obj, lag.max = max_lag, plot = FALSE)
+  pacf_result <- pacf(ts_obj, lag.max = max_lag, plot = FALSE)
+  
+  # Create ACF data frame
+  acf_df <- data.frame(
+    lag = acf_result$lag[,,1],
+    acf = acf_result$acf[,,1],
+    type = "ACF (Autocorrelation Function)"
+  )
+  
+  # Create PACF data frame  
+  pacf_df <- data.frame(
+    lag = pacf_result$lag[,,1],
+    acf = pacf_result$acf[,,1],
+    type = "PACF (Partial Autocorrelation Function)"
+  )
+  
+  # Combine data
+  combined_df <- rbind(acf_df, pacf_df)
+  
+  # Calculate confidence intervals
+  n <- length(ts_obj)
+  ci <- qnorm(0.975) / sqrt(n)
+  
+  p <- ggplot(combined_df, aes(x = lag, y = acf)) +
+    geom_hline(yintercept = 0, color = "black", size = 0.5) +
+    geom_hline(yintercept = c(ci, -ci), color = "blue", linetype = "dashed", alpha = 0.7) +
+    geom_segment(aes(xend = lag, yend = 0), color = "#1f77b4", size = 1) +
+    geom_point(color = "#1f77b4", size = 2) +
+    facet_wrap(~ type, ncol = 1, scales = "free_y") +
+    labs(
+      title = paste("Autocorrelation Analysis:", series_name),
+      subtitle = "ACF and PACF plots for stationarity and model identification",
+      x = "Lag",
+      y = "Autocorrelation",
+      caption = "Dashed blue lines: 95% confidence intervals | Values outside indicate significant correlation"
+    ) +
+    theme_minimal() +
+    theme(
+      strip.background = element_rect(fill = "lightgray", alpha = 0.5),
+      strip.text = element_text(face = "bold", size = 11),
+      plot.title = element_text(size = 16, face = "bold")
+    ) +
+    scale_x_continuous(breaks = seq(0, max_lag, by = 6))
+  
+  return(list(plot = p, acf_values = acf_result, pacf_values = pacf_result))
+}
+
+# Create ACF/PACF plots for all series
+acf_pacf_results <- list()
+
+for (i in 1:length(available_vars)) {
+  var_name <- available_vars[i]
+  display_name <- case_when(
+    var_name == "food_at_home" ~ "Food at Home CPI",
+    var_name == "food_away_home" ~ "Food Away from Home CPI",
+    var_name == "cpi_all" ~ "Overall CPI (All Items)",
+    TRUE ~ str_to_title(str_replace_all(var_name, "_", " "))
+  )
+  
+  acf_pacf_results[[var_name]] <- create_acf_pacf_analysis(ts_data[[var_name]], display_name)
+  print(acf_pacf_results[[var_name]]$plot)
+}
+
+cat("✓ ACF and PACF analysis completed\n")
+```
+```{r}
+# AUGMENTED DICKEY-FULLER STATIONARITY TESTS
+
+perform_adf_tests <- function(ts_data, series_names) {
+  
+  adf_results <- data.frame(
+    Series = character(),
+    ADF_Statistic = numeric(),
+    P_Value = numeric(),
+    Critical_Value_1pct = numeric(),
+    Critical_Value_5pct = numeric(),
+    Critical_Value_10pct = numeric(),
+    Is_Stationary_5pct = logical(),
+    Is_Stationary_1pct = logical(),
+    stringsAsFactors = FALSE
+  )
+  
+  cat("Performing ADF tests...\n")
+  
+  for(i in 1:length(series_names)) {
+    series_name <- series_names[i]
+    ts_obj <- ts_data[[series_name]]
+    
+    # Clean data
+    ts_clean <- ts_obj[!is.na(ts_obj)]
+    
+    # Perform ADF test
+    tryCatch({
+      adf_test <- adf.test(ts_clean, alternative = "stationary")
+      
+      display_name <- case_when(
+        series_name == "food_at_home" ~ "Food at Home CPI",
+        series_name == "food_away_home" ~ "Food Away from Home CPI",
+        series_name == "cpi_all" ~ "Overall CPI (All Items)",
+        TRUE ~ str_to_title(str_replace_all(series_name, "_", " "))
+      )
+      
+      adf_results <<- rbind(adf_results, data.frame(
+        Series = display_name,
+        ADF_Statistic = round(adf_test$statistic, 4),
+        P_Value = round(adf_test$p.value, 4),
+        Critical_Value_1pct = round(attr(adf_test$statistic, "names"), 4),
+        Critical_Value_5pct = round(attr(adf_test$statistic, "names"), 4), 
+        Critical_Value_10pct = round(attr(adf_test$statistic, "names"), 4),
+        Is_Stationary_5pct = adf_test$p.value < 0.05,
+        Is_Stationary_1pct = adf_test$p.value < 0.01
+      ))
+      
+      cat("✓", display_name, "- ADF Statistic:", round(adf_test$statistic, 4), 
+          ", p-value:", round(adf_test$p.value, 4), 
+          ", Stationary (5%):", adf_test$p.value < 0.05, "\n")
+      
+    }, error = function(e) {
+      cat("✗ Error testing", series_name, ":", e$message, "\n")
+    })
+  }
+  
+  return(adf_results)
+}
+
+# Perform ADF tests
+adf_results <- perform_adf_tests(ts_data, available_vars)
+
+cat("\nAUGMENTED DICKEY-FULLER TEST RESULTS:\n")
+print(adf_results)
+```
+```{r}
+# MAKING SERIES STATIONARY 
+make_stationary <- function(ts_obj, series_name) {
+  
+  display_name <- case_when(
+    series_name == "food_at_home" ~ "Food at Home CPI",
+    series_name == "food_away_home" ~ "Food Away from Home CPI", 
+    series_name == "cpi_all" ~ "Overall CPI (All Items)",
+    TRUE ~ str_to_title(str_replace_all(series_name, "_", " "))
+  )
+  
+  cat("Making", display_name, "stationary...\n")
+  
+  # First differencing
+  diff1 <- diff(ts_obj, differences = 1)
+  
+  # Test stationarity of differenced series
+  adf_test_diff1 <- adf.test(diff1[!is.na(diff1)], alternative = "stationary")
+  
+  # Create comparison plots - Original vs First Difference
+  original_df <- data.frame(
+    date = as.Date(time(ts_obj)),
+    value = as.numeric(ts_obj),
+    series_type = "Original Series"
+  )
+  
+  diff1_df <- data.frame(
+    date = as.Date(time(diff1)),
+    value = as.numeric(diff1),
+    series_type = "First Difference"
+  )
+  
+  combined_df <- rbind(original_df, diff1_df)
+  
+  p1 <- ggplot(combined_df, aes(x = date, y = value)) +
+    geom_line(color = "#1f77b4", size = 1) +
+    facet_wrap(~ series_type, scales = "free_y", ncol = 1) +
+    labs(
+      title = paste("Stationarity Transformation:", display_name),
+      subtitle = paste("First difference ADF p-value:", round(adf_test_diff1$p.value, 4)),
+      x = "Date",
+      y = "Value",
+      caption = "First differencing removes trend to achieve stationarity"
+    ) +
+    theme_minimal() +
+    theme(
+      strip.background = element_rect(fill = "lightblue", alpha = 0.3),
+      strip.text = element_text(face = "bold", size = 12),
+      plot.title = element_text(size = 16, face = "bold")
+    )
+  
+  # ACF comparison - Original vs Differenced
+  acf_orig <- acf(ts_obj[!is.na(ts_obj)], lag.max = 24, plot = FALSE)
+  acf_diff1 <- acf(diff1[!is.na(diff1)], lag.max = 24, plot = FALSE)
+  
+  acf_orig_df <- data.frame(
+    lag = acf_orig$lag[,,1],
+    acf = acf_orig$acf[,,1],
+    series_type = "Original Series ACF"
+  )
+  
+  acf_diff1_df <- data.frame(
+    lag = acf_diff1$lag[,,1],
+    acf = acf_diff1$acf[,,1], 
+    series_type = "First Difference ACF"
+  )
+  
+  acf_combined <- rbind(acf_orig_df, acf_diff1_df)
+  
+  n <- length(ts_obj[!is.na(ts_obj)])
+  ci <- qnorm(0.975) / sqrt(n)
+  
+  p2 <- ggplot(acf_combined, aes(x = lag, y = acf)) +
+    geom_hline(yintercept = 0, color = "black") +
+    geom_hline(yintercept = c(ci, -ci), color = "blue", linetype = "dashed", alpha = 0.7) +
+    geom_segment(aes(xend = lag, yend = 0), color = "#1f77b4", size = 1) +
+    geom_point(color = "#1f77b4", size = 2) +
+    facet_wrap(~ series_type, ncol = 1) +
+    labs(
+      title = paste("ACF Comparison after Differencing:", display_name),
+      subtitle = "Comparing autocorrelation structure before and after first differencing",
+      x = "Lag",
+      y = "Autocorrelation",
+      caption = "Stationary series should show rapid decay in ACF"
+    ) +
+    theme_minimal() +
+    theme(
+      strip.background = element_rect(fill = "lightgray", alpha = 0.5),
+      strip.text = element_text(face = "bold", size = 11)
+    )
+  
+  return(list(
+    comparison_plot = p1,
+    acf_comparison = p2,
+    differenced_series = diff1,
+    adf_result = adf_test_diff1,
+    is_stationary_after_diff = adf_test_diff1$p.value < 0.05
+  ))
+}
+
+# Make non-stationary series stationary
+non_stationary_series <- available_vars[!adf_results$Is_Stationary_5pct]
+
+if(length(non_stationary_series) > 0) {
+  cat("Non-stationary series found:", paste(non_stationary_series, collapse = ", "), "\n")
+  
+  stationary_results <- list()
+  
+  for(i in 1:length(non_stationary_series)) {
+    series_name <- non_stationary_series[i]
+    
+    stationary_results[[series_name]] <- make_stationary(ts_data[[series_name]], series_name)
+    
+    print(stationary_results[[series_name]]$comparison_plot)
+    print(stationary_results[[series_name]]$acf_comparison)
+    
+    if(stationary_results[[series_name]]$is_stationary_after_diff) {
+      cat("✓", series_name, "is now stationary after first differencing\n")
+    } else {
+      cat("⚠️", series_name, "may need additional differencing\n")
+    }
+  }
+} else {
+  cat("All series are already stationary!\n")
+}
+```
+```{r}
+# MOVING AVERAGE SMOOTHING
+
+perform_ma_smoothing <- function(ts_obj, series_name, windows = c(3, 6, 12, 24)) {
+  
+  display_name <- case_when(
+    series_name == "food_at_home" ~ "Food at Home CPI",
+    series_name == "food_away_home" ~ "Food Away from Home CPI",
+    series_name == "cpi_all" ~ "Overall CPI (All Items)", 
+    TRUE ~ str_to_title(str_replace_all(series_name, "_", " "))
+  )
+  
+  cat("Creating MA smoothing for", display_name, "with windows:", paste(windows, collapse = ", "), "\n")
+  
+  # Create data frame with original series
+  ma_df <- data.frame(
+    date = as.Date(time(ts_obj)),
+    original = as.numeric(ts_obj)
+  )
+  
+  # Calculate moving averages for different windows
+  for(window in windows) {
+    ma_values <- SMA(ts_obj, n = window)
+    ma_df[[paste0("MA_", window)]] <- as.numeric(ma_values)
+  }
+  
+  # Convert to long format
+  ma_long <- ma_df %>%
+    pivot_longer(cols = -date, names_to = "ma_type", values_to = "value") %>%
+    mutate(
+      ma_type_clean = case_when(
+        ma_type == "original" ~ "Original Series",
+        TRUE ~ paste("MA(", str_extract(ma_type, "\\d+"), ")", sep = "")
+      ),
+      line_type = ifelse(ma_type == "original", "Original", "Smoothed"),
+      line_size = ifelse(ma_type == "original", 1.2, 1.0)
+    )
+  
+  p <- ggplot(ma_long, aes(x = date, y = value, color = ma_type_clean, size = line_size)) +
+    geom_line(alpha = 0.8) +
+    scale_color_viridis_d(name = "Series Type", option = "plasma") +
+    scale_size_identity() +
+    labs(
+      title = paste("Moving Average Smoothing Analysis:", display_name),
+      subtitle = "Comparison of different smoothing windows to identify underlying patterns",
+      x = "Date",
+      y = "Index Value",
+      caption = "Different MA windows reveal trend (long MA) vs seasonal patterns (short MA)"
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position = "bottom",
+      plot.title = element_text(size = 16, face = "bold"),
+      plot.subtitle = element_text(size = 12)
+    ) +
+    guides(color = guide_legend(ncol = 3))
+  
+  return(p)
+}
+
+# Perform MA smoothing for all series
+ma_plots <- list()
+
+for (i in 1:length(available_vars)) {
+  var_name <- available_vars[i]
+  ma_plots[[var_name]] <- perform_ma_smoothing(ts_data[[var_name]], var_name, c(3, 6, 12, 24))
+  print(ma_plots[[var_name]])
+}
+
+# Advanced MA Analysis - Seasonal-specific windows
+perform_seasonal_ma_analysis <- function(ts_obj, series_name) {
+  
+  display_name <- case_when(
+    series_name == "food_at_home" ~ "Food at Home CPI",
+    series_name == "food_away_home" ~ "Food Away from Home CPI",
+    series_name == "cpi_all" ~ "Overall CPI (All Items)",
+    TRUE ~ str_to_title(str_replace_all(series_name, "_", " "))
+  )
+  
+  cat("Advanced seasonal MA analysis for", display_name, "\n")
+  
+  # Use seasonal-specific windows (for monthly data)
+  seasonal_windows <- c(3, 12, 24, 36)
+  
+  ma_df <- data.frame(
+    date = as.Date(time(ts_obj)),
+    original = as.numeric(ts_obj)
+  )
+  
+  for(window in seasonal_windows) {
+    ma_values <- SMA(ts_obj, n = window)
+    ma_df[[paste0("MA_", window)]] <- as.numeric(ma_values)
+  }
+  
+  # Focus on key seasonal patterns
+  ma_long <- ma_df %>%
+    pivot_longer(cols = -date, names_to = "ma_type", values_to = "value") %>%
+    filter(ma_type %in% c("original", "MA_3", "MA_12", "MA_24")) %>%
+    mutate(
+      ma_type_clean = case_when(
+        ma_type == "original" ~ "Original Series",
+        ma_type == "MA_3" ~ "3-Month MA (Short-term)",
+        ma_type == "MA_12" ~ "12-Month MA (Annual Cycle)",
+        ma_type == "MA_24" ~ "24-Month MA (Long-term Trend)",
+        TRUE ~ ma_type
+      ),
+      line_width = case_when(
+        ma_type == "original" ~ 0.8,
+        ma_type == "MA_3" ~ 1.0,
+        ma_type == "MA_12" ~ 1.2,
+        ma_type == "MA_24" ~ 1.4,
+        TRUE ~ 1.0
+      )
+    )
+  
+  p <- ggplot(ma_long, aes(x = date, y = value, color = ma_type_clean, size = line_width)) +
+    geom_line(alpha = 0.8) +
+    scale_color_manual(
+      values = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"), 
+      name = "Smoothing Type"
+    ) +
+    scale_size_identity() +
+    labs(
+      title = paste("Seasonal Moving Average Analysis:", display_name),
+      subtitle = "Different smoothing windows reveal seasonal vs trend components",
+      x = "Date", 
+      y = "Index Value",
+      caption = "12-month MA removes seasonality; 3-month MA shows short-term fluctuations; 24-month MA shows long-term trend"
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position = "bottom",
+      plot.title = element_text(size = 16, face = "bold"),
+      plot.subtitle = element_text(size = 12)
+    ) +
+    geom_vline(xintercept = as.Date("2020-03-01"), linetype = "dashed", color = "red", alpha = 0.5) +
+    geom_vline(xintercept = as.Date("2008-09-01"), linetype = "dashed", color = "blue", alpha = 0.5)
+  
+  return(p)
+}
+
+# Apply seasonal MA analysis to all series
+seasonal_ma_plots <- list()
+
+for (i in 1:length(available_vars)) {
+  var_name <- available_vars[i]
+  seasonal_ma_plots[[var_name]] <- perform_seasonal_ma_analysis(ts_data[[var_name]], var_name)
+  print(seasonal_ma_plots[[var_name]])
+}
+
+cat("✓ Moving Average smoothing analysis completed\n")
+```
+```{r}
+
+# LOG TRANSFORMATION 
+
+check_heteroscedasticity <- function(ts_obj, series_name) {
+  
+  display_name <- case_when(
+    series_name == "food_at_home" ~ "Food at Home CPI",
+    series_name == "food_away_home" ~ "Food Away from Home CPI",
+    series_name == "cpi_all" ~ "Overall CPI (All Items)",
+    TRUE ~ str_to_title(str_replace_all(series_name, "_", " "))
+  )
+  
+  cat("Checking heteroscedasticity for", display_name, "\n")
+  
+  # Original series
+  original_df <- data.frame(
+    date = as.Date(time(ts_obj)),
+    value = as.numeric(ts_obj),
+    log_value = log(as.numeric(ts_obj))
+  )
+  
+  # Calculate residuals from trend
+  original_df$trend <- as.numeric(fitted(loess(value ~ as.numeric(date), data = original_df)))
+  original_df$residuals <- original_df$value - original_df$trend
+  
+  # Log residuals
+  original_df$log_trend <- as.numeric(fitted(loess(log_value ~ as.numeric(date), data = original_df)))
+  original_df$log_residuals <- original_df$log_value - original_df$log_trend
+  
+  # Create comparison plots
+  p1 <- original_df %>%
+    select(date, value, log_value) %>%
+    pivot_longer(cols = c(value, log_value), names_to = "transformation", values_to = "val") %>%
+    mutate(
+      transformation_clean = case_when(
+        transformation == "value" ~ "Original Series",
+        transformation == "log_value" ~ "Log-Transformed Series"
+      )
+    ) %>%
+    ggplot(aes(x = date, y = val)) +
+    geom_line(color = "#1f77b4", size = 1) +
+    facet_wrap(~ transformation_clean, scales = "free_y", ncol = 1) +
+    labs(
+      title = paste("Original vs Log-Transformed Series:", display_name),
+      subtitle = "Log transformation can stabilize variance if heteroscedasticity is present",
+      x = "Date",
+      y = "Value",
+      caption = "Log transformation reduces exponential growth patterns"
+    ) +
+    theme_minimal() +
+    theme(
+      strip.background = element_rect(fill = "lightgreen", alpha = 0.3),
+      strip.text = element_text(face = "bold", size = 11),
+      plot.title = element_text(size = 16, face = "bold")
+    )
+  
+  # Residuals comparison
+  p2 <- original_df %>%
+    select(date, residuals, log_residuals) %>%
+    pivot_longer(cols = c(residuals, log_residuals), names_to = "residual_type", values_to = "residual") %>%
+    mutate(
+      residual_type_clean = case_when(
+        residual_type == "residuals" ~ "Original Residuals",
+        residual_type == "log_residuals" ~ "Log-Transformed Residuals"
+      )
+    ) %>%
+    ggplot(aes(x = date, y = residual)) +
+    geom_line(color = "#d62728", size = 0.8) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+    facet_wrap(~ residual_type_clean, scales = "free_y", ncol = 1) +
+    labs(
+      title = paste("Residuals Comparison:", display_name),
+      subtitle = "Comparing variance stability between original and log-transformed residuals",
+      x = "Date",
+      y = "Residuals",
+      caption = "More stable residuals (constant variance) suggest appropriate transformation"
+    ) +
+    theme_minimal() +
+    theme(
+      strip.background = element_rect(fill = "lightcoral", alpha = 0.3),
+      strip.text = element_text(face = "bold", size = 11)
+    )
+  
+  # Calculate variance statistics
+  orig_var <- var(original_df$residuals, na.rm = TRUE)
+  log_var <- var(original_df$log_residuals, na.rm = TRUE)
+  
+  cat("  Original residuals variance:", round(orig_var, 4), "\n")
+  cat("  Log-transformed residuals variance:", round(log_var, 4), "\n")
+  cat("  Variance ratio (log/original):", round(log_var/orig_var, 4), "\n")
+  
+  return(list(
+    comparison_plot = p1,
+    residuals_plot = p2,
+    log_ts = ts(original_df$log_value, start = start(ts_obj), frequency = frequency(ts_obj)),
+    variance_improvement = log_var < orig_var
+  ))
+}
+
+# Check log transformation for each series
+log_results <- list()
+
+for (i in 1:length(available_vars)) {
+  var_name <- available_vars[i]
+  log_results[[var_name]] <- check_heteroscedasticity(ts_data[[var_name]], var_name)
+  
+  print(log_results[[var_name]]$comparison_plot)
+  print(log_results[[var_name]]$residuals_plot)
+  
+  if (log_results[[var_name]]$variance_improvement) {
+    cat("✓ Log transformation improves variance stability for", var_name, "\n")
+  } else {
+    cat("→ Original scale is adequate for", var_name, "\n")
+  }
+}
+
+cat("✓ Log transformation analysis completed\n")
+```
