@@ -5,6 +5,7 @@ format:
     toc: true
     toc-depth: 3
     link-external-newwindow: true
+    page-layout: full
 code-fold: true
 code-summary: "Show Code"
 execute:
@@ -12,6 +13,17 @@ execute:
   message: false
 editor : source
 ---
+
+## Dataset Overview
+
+
+This comprehensive analysis examines U.S. inflation trends through the lens of everyday American experiences, using Consumer Price Index (CPI) data from the Federal Reserve Economic Data (FRED) spanning January 2010 to December 2024. Our investigation begins with food inflation—the most immediate and visceral form of price pressure that families face daily. The original dataset comprises four key food price indices: Food at Home CPI (representing grocery costs), Food Away from Home CPI (restaurant and dining costs), Food Total CPI (aggregate food prices), and Overall CPI (economy-wide price levels). These monthly time series capture approximately 15 years of dining table economics, encompassing multiple economic cycles including the 2008 financial crisis recovery, pre-pandemic stability, COVID-19 disruption, and subsequent policy responses.
+
+Building upon this foundation, we've expanded our analysis to encompass the broader landscape of American cost of living through three additional critical dimensions that shape household budgets and financial well-being. Housing costs represent the largest expense for most families, tracked through Shelter CPI (overall housing expenses), Rent CPI (rental market dynamics), and 30-Year Mortgage Rates (the gateway to homeownership). Energy prices, captured through Gasoline CPI, serve as both a direct household expense and a barometer of broader economic volatility that ripples through transportation, goods delivery, and consumer sentiment. Finally, the financial environment—measured by Federal Funds Rate and 10-Year Treasury Rate—reveals how monetary policy decisions in Washington boardrooms ultimately affect family budgets across America.
+
+Together, these indicators weave a story of how abstract economic forces translate into concrete realities: the monthly rent check, the weekly grocery bill, the daily commute, and the long-term dream of homeownership. This multi-dimensional approach captures not just what inflation looks like in government statistics, but how it feels in American households.
+
+
 
 ```{r}
 
@@ -26,8 +38,34 @@ library(gridExtra)
 library(viridis)
 library(httr)
 library(jsonlite)
-```
-```{r}
+library(dplyr)
+library(readr)
+library(scales)
+library(tidyr)
+
+# Read all CSV files
+shelter_cpi <- read_csv("./data/CUSR0000SAH1.csv")
+rent_cpi <- read_csv("./data/CUSR0000SEHA.csv")
+mortgage_rate <- read_csv("./data/MORTGAGE30US.csv")
+gasoline_cpi <- read_csv("./data/CUSR0000SETB01.csv")
+treasury_10y <- read_csv("./data/DGS10.csv")
+fed_funds <- read_csv("./data/FEDFUNDS.csv")
+
+shelter_cpi$DATE <- as.Date(shelter_cpi$observation_date)
+rent_cpi$DATE <- as.Date(rent_cpi$observation_date)
+mortgage_rate$DATE <- as.Date(mortgage_rate$observation_date)
+gasoline_cpi$DATE <- as.Date(gasoline_cpi$observation_date)
+treasury_10y$DATE <- as.Date(treasury_10y$observation_date)
+fed_funds$DATE <- as.Date(fed_funds$observation_date)
+
+# Rename value columns for clarity (assuming second column contains values)
+names(shelter_cpi)[2] <- "Shelter_CPI"
+names(rent_cpi)[2] <- "Rent_CPI"
+names(mortgage_rate)[2] <- "Mortgage_Rate"
+names(gasoline_cpi)[2] <- "Gasoline_CPI"
+names(treasury_10y)[2] <- "Treasury_10Y"
+names(fed_funds)[2] <- "Fed_Funds_Rate"
+
 # Set theme
 theme_set(theme_minimal() + 
   theme(
@@ -43,10 +81,6 @@ if (!dir.exists("data")) {
   dir.create("data")
   cat("Created 'data' directory\n")
 }
-```
-```{r}
-
-cat("=== FOOD INFLATION DATA COLLECTION ===\n")
 
 # Food-related FRED series IDs 
 food_series <- list(
@@ -61,18 +95,14 @@ food_data_list <- list()
 
 # Check what data we successfully downloaded
 successful_downloads <- names(food_data_list)
-cat("Successfully downloaded", length(successful_downloads), "out of", length(food_series), "series:\n")
 for (id in successful_downloads) {
   series_name <- food_series[[which(sapply(food_series, function(x) x$id == id))]]$name
   cat("✓", id, "-", series_name, "\n")
 }
-```
-```{r}
 
 # Function to load and clean FRED CSV files
 load_fred_csv <- function(file_path, series_name) {
-  cat("Loading", series_name, "from", file_path, "...\n")
-  
+
   tryCatch({
     # Read the CSV file
     data <- read_csv(file_path, show_col_types = FALSE)
@@ -101,9 +131,6 @@ load_fred_csv <- function(file_path, series_name) {
         ) %>%
         filter(!is.na(date), !is.na(value), value != ".", !is.infinite(value)) %>%
         arrange(date)
-      
-      cat("✓ Loaded", nrow(data), "observations for", series_name, "\n")
-      cat("  Date range:", min(data$date), "to", max(data$date), "\n")
       
       return(data)
     } else {
@@ -148,11 +175,8 @@ for (i in 1:length(food_data_files)) {
   }
 }
 
-cat("\n")
 # Combine all loaded data
 if (length(loaded_data) >= 2) {
-  cat("Combining", length(loaded_data), "data series...\n")
-  
   # Start with the first dataset
   combined_food_data <- loaded_data[[1]]
   
@@ -166,7 +190,6 @@ if (length(loaded_data) >= 2) {
   if (!"food_total" %in% names(combined_food_data) && 
       all(c("food_at_home", "food_away_home") %in% names(combined_food_data))) {
     
-    cat("Calculating food_total as average of food_at_home and food_away_home...\n")
     combined_food_data <- combined_food_data %>%
       mutate(food_total = (food_at_home + food_away_home) / 2)
   }
@@ -175,18 +198,11 @@ if (length(loaded_data) >= 2) {
   combined_food_data <- combined_food_data %>%
     arrange(date) %>%
     filter(if_any(-date, ~ !is.na(.x)))
-  
-  cat("✓ Combined dataset created with", nrow(combined_food_data), "observations\n")
-  cat("Variables:", paste(names(combined_food_data), collapse = ", "), "\n")
+
   
 } else {
   stop("ERROR: Need at least 2 data series to proceed. Please check your data files in the 'data/' folder.")
 }
-```
-
-```{r}
-
-cat("\n=== STEP 3: DATA QUALITY CHECK ===\n")
 
 # Summary statistics
 data_summary <- combined_food_data %>%
@@ -202,19 +218,21 @@ available_vars <- names(combined_food_data)[names(combined_food_data) != "date"]
 completeness <- combined_food_data %>%
   summarise(across(all_of(available_vars), ~ round(sum(!is.na(.x)) / n() * 100, 1), .names = "{.col}_complete"))
 
-print("Data Summary:")
-print(data_summary)
-print("Data Completeness (%):")
-print(completeness)
-
-cat("\nFirst few rows:\n")
-print(head(combined_food_data, 5))
-
-cat("\nLast few rows:\n") 
-print(tail(combined_food_data, 3))
 ```
-```{r}
 
+## Food
+
+### Interactive Food Inflation Dashboard
+
+The comprehensive dashboard reveals distinct phases in food price evolution through multiple analytical lenses. The upper left panel displays absolute CPI levels, showing steady upward trajectories with notable acceleration post-2020. Food away from home (orange line) exhibits the steepest price growth, reaching nearly 380 index points by 2024, while food at home (blue line) demonstrates more moderate increases. 
+
+The year-over-year inflation rates (upper right) expose the volatile nature of food price changes, with dramatic spikes during 2021-2022 reaching 10-14% annually—levels not observed since the early 1980s. The indexed comparison (lower left) normalizes all series to 100 at the start period, clearly illustrating that restaurant prices have increased approximately 65% compared to 45% for groceries since 2010. The recent three-year trend (lower right) captures the inflation surge and subsequent moderation, with most categories returning toward 2-4% annual growth by late 2024.
+
+
+```{r}
+#| label: plotly-dashboard
+#| fig-cap: "Food Inflation Dashboard"
+#| out-width: "100%"
 create_plotly_dashboard <- function(data) {
   
   # Get available columns (excluding date)
@@ -426,8 +444,6 @@ create_plotly_dashboard <- function(data) {
         )
       )
     )
-  
-  #subplot() 
   combined_plot <- subplot(
     subplot(p1, p2, nrows = 1, shareY = FALSE, titleX = TRUE, titleY = TRUE),
     subplot(p3, p4, nrows = 1, shareY = FALSE, titleX = TRUE, titleY = TRUE),
@@ -436,30 +452,31 @@ create_plotly_dashboard <- function(data) {
   ) %>%
   layout(
     title = list(
-      text = "<b>Food Inflation Dashboard: Real CPI Data Analysis</b><br><sup>Interactive analysis of food price trends and inflation rates</sup>",
+      text = "<b>Food Inflation Dashboard: Real CPI Data Analysis</b><br><sup>Interactive analysis of food price trends and inflation rates | Red dashed lines mark COVID-19 onset (March 2020)</sup>",
       font = list(size = 16)
     ),
     template = "plotly_white",
     height = 800,
-    showlegend = FALSE,
-    annotations = list(
-      list(x = 0.2, y = 1.02, xref = "paper", yref = "paper",
-           text = "COVID-19", showarrow = FALSE, font = list(color = "red", size = 10))
-    )
+    showlegend = FALSE
   )
   
   return(combined_plot)
 }
 
 plotly_dashboard <- create_plotly_dashboard(combined_food_data)
-print(plotly_dashboard)
+plotly_dashboard
 ```
+
+### Seasonal and Period-Based Inflation Patterns
+
+The heatmap analysis reveals systematic differences across time periods and seasonal patterns. The COVID era (2020-2022) displays predominantly red coloration, indicating sustained high inflation across all food categories throughout most months. This contrasts sharply with the pre-COVID period (2011-2019), characterized by predominantly neutral to mild positive inflation rates. The post-COVID era (2023+) shows a cooling pattern, with inflation rates moderating but remaining elevated compared to historical norms.
+
+Seasonal patterns emerge within each period: food prices typically show modest increases during winter months and more variable behavior during summer periods. The intensity of seasonal effects appears amplified during the COVID era, suggesting that supply chain disruptions interacted with normal seasonal variations to create more pronounced price swings.
+
+
 
 ```{r}
 # GGPLOT2 Heatmap - Food Inflation Analysis
-
-cat("Creating ggplot2 heatmap...\n")
-
 create_ggplot_heatmap <- function(data) {
   
   # Get available columns
@@ -501,44 +518,149 @@ create_ggplot_heatmap <- function(data) {
     return(ggplot() + theme_void() + labs(title = "Insufficient data for heatmap"))
   }
   
-  # Create the heatmap
-  g <- ggplot(heatmap_data, aes(x = month, y = category_clean, fill = inflation_rate)) +
-    geom_tile(color = "white", size = 0.3) +
-    geom_text(aes(label = ifelse(abs(inflation_rate) > 5, paste0(round(inflation_rate, 1), "%"), "")), 
-              color = "black", size = 3, fontface = "bold") +
+  # Create the heatmap with proper dimensions and clean layout
+  g <- ggplot(heatmap_data, aes(x = month, y = fct_rev(category_clean), fill = inflation_rate)) +
+    geom_tile(color = "white", size = 0.8) +
+    # Remove ALL text inside tiles for clean appearance
     scale_fill_gradient2(
       low = "#2166AC", mid = "white", high = "#B2182B",
       midpoint = 0, name = "YoY %\nChange",
-      limits = c(-15, 25), oob = scales::squish
+      limits = c(-10, 20), oob = scales::squish,
+      breaks = seq(-10, 20, by = 5)
     ) +
-    facet_wrap(~ period, ncol = 3) +
+    facet_wrap(~ period, ncol = 1, strip.position = "top") +  # Single column layout
     labs(
-      title = "Food Inflation Heatmap: Year-over-Year Changes by Month and Period",
-      subtitle = "Real CPI data showing seasonal patterns and period differences in food price inflation",
+      title = "Food Inflation Heatmap: Year-over-Year Changes",
+      subtitle = "Seasonal patterns across different time periods",
       x = "Month",
-      y = "Category", 
-      caption = "Data: Federal Reserve Economic Data (FRED) | Text shows values >5% or <-5%"
+      y = "Food Category",
+      caption = "Data: Federal Reserve Economic Data (FRED)"
     ) +
     theme_minimal() +
     theme(
-      axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
-      axis.text.y = element_text(size = 11),
+      # Fix text sizing and spacing
+      axis.text.x = element_text(size = 10, angle = 0, hjust = 0.5),
+      axis.text.y = element_text(size = 10),
+      
+      # Clean facet labels
       strip.background = element_rect(fill = "lightgray", alpha = 0.8),
       strip.text = element_text(face = "bold", size = 11),
-      plot.title = element_text(size = 16, face = "bold"),
-      plot.subtitle = element_text(size = 12),
-      legend.position = "right"
+      
+      # Title formatting
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(size = 12, hjust = 0.5),
+      plot.caption = element_text(size = 10, hjust = 0.5),
+      
+      # Legend positioning
+      legend.position = "right",
+      legend.title = element_text(size = 11),
+      legend.text = element_text(size = 10),
+      
+      # Proper spacing
+      panel.spacing.y = unit(1.5, "lines"),
+      plot.margin = margin(20, 20, 20, 20),
+      
+      # Remove grid
+      panel.grid = element_blank()
     )
   
   return(g)
 }
 
-# Create and display the heatmap
-ggplot_heatmap <- create_ggplot_heatmap(combined_food_data)
+create_ggplot_heatmap_horizontal <- function(data) {
+  
+  # Get available columns
+  available_cols <- names(data)[names(data) != "date"]
+  
+  # Calculate year-over-year changes 
+  heatmap_data <- data %>%
+    arrange(date) %>%
+    mutate(
+      across(all_of(available_cols), 
+             ~ (. / lag(., 12) - 1) * 100, 
+             .names = "{.col}_yoy")
+    ) %>%
+    filter(if_any(ends_with("_yoy"), ~ !is.na(.x))) %>%
+    select(date, ends_with("_yoy")) %>%
+    mutate(
+      year = year(date),
+      month = month(date, label = TRUE, abbr = TRUE)
+    ) %>%
+    pivot_longer(cols = ends_with("_yoy"), names_to = "category", values_to = "inflation_rate") %>%
+    mutate(
+      category_clean = case_when(
+        category == "food_at_home_yoy" ~ "Food at Home",
+        category == "food_away_home_yoy" ~ "Food Away from Home",
+        category == "food_total_yoy" ~ "Food Total",
+        category == "cpi_all_yoy" ~ "Overall CPI",
+        TRUE ~ str_remove(category, "_yoy") %>% str_to_title()
+      ),
+      period = case_when(
+        year <= 2019 ~ "Pre-COVID\n(2011-2019)",
+        year %in% 2020:2022 ~ "COVID Era\n(2020-2022)",
+        year >= 2023 ~ "Post-COVID\n(2023+)",
+        TRUE ~ "Other"
+      )
+    ) %>%
+    filter(!is.na(inflation_rate))
+  
+  if (nrow(heatmap_data) == 0) {
+    return(ggplot() + theme_void() + labs(title = "Insufficient data for heatmap"))
+  }
+  
+  # Horizontal layout version
+  g <- ggplot(heatmap_data, aes(x = month, y = fct_rev(category_clean), fill = inflation_rate)) +
+    geom_tile(color = "white", size = 0.5) +
+    scale_fill_gradient2(
+      low = "#2166AC", mid = "white", high = "#B2182B",
+      midpoint = 0, name = "YoY %\nChange",
+      limits = c(-10, 20), oob = scales::squish
+    ) +
+    facet_wrap(~ period, ncol = 3) +  
+    labs(
+      title = "Food Inflation Heatmap by Period",
+      x = "Month",
+      y = "Food Category",
+      caption = "Source: Federal Reserve Economic Data (FRED)"
+    ) +
+    theme_minimal() +
+    theme(
+      # Larger text for better readability
+      axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
+      axis.text.y = element_text(size = 10),
+      
+      # Better facet formatting
+      strip.background = element_rect(fill = "lightgray", alpha = 0.7),
+      strip.text = element_text(face = "bold", size = 10),
+      
+      # Clean titles
+      plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+      axis.title = element_text(size = 11),
+      
+      # Legend on bottom to save horizontal space
+      legend.position = "bottom",
+      legend.title = element_text(size = 10),
+      
+      # Better spacing
+      panel.spacing = unit(1, "lines"),
+      plot.margin = margin(15, 15, 15, 15),
+      panel.grid = element_blank()
+    ) +
+    guides(fill = guide_colorbar(title.position = "top", title.hjust = 0.5, barwidth = 15, barheight = 1))
+  
+  return(g)
+}
+
+# Use the horizontal version for better display
+ggplot_heatmap <- create_ggplot_heatmap_horizontal(combined_food_data)
 print(ggplot_heatmap)
 
-cat("✓ ggplot2 heatmap created successfully\n")
 ```
+### Price Volatility Analysis
+
+The volatility analysis quantifies price uncertainty through rolling 12-month standard deviations of monthly price changes. Food at home (blue line) exhibits the highest volatility throughout most of the analysis period, with dramatic spikes reaching 0.8% monthly volatility during 2020-2021. This represents unprecedented price unpredictability, far exceeding levels observed during the 2008-2009 financial crisis.
+
+The COVID-19 period marks a clear structural break in price stability across all food categories. Pre-pandemic volatility typically ranged between 0.1-0.3% monthly, while post-COVID levels reached 0.4-0.8%. The synchronized increase across all categories suggests systemic rather than category-specific shocks. By 2024, volatility has declined but remains above pre-pandemic baselines, indicating persistent supply chain fragility.
 
 ```{r}
 create_ggplot_volatility <- function(data) {
@@ -622,9 +744,7 @@ create_ggplot_volatility <- function(data) {
     geom_vline(xintercept = as.Date("2020-03-01"), linetype = "dashed", color = "red", alpha = 0.7) +
     geom_vline(xintercept = as.Date("2008-09-01"), linetype = "dashed", color = "blue", alpha = 0.7) +
     annotate("text", x = as.Date("2020-06-01"), y = max(volatility_data$volatility, na.rm = TRUE) * 0.9, 
-             label = "COVID-19", color = "red", size = 3.5) +
-    annotate("text", x = as.Date("2009-03-01"), y = max(volatility_data$volatility, na.rm = TRUE) * 0.8, 
-             label = "Financial Crisis", color = "blue", size = 3.5)
+             label = "COVID-19", color = "red", size = 3.5) 
   
   return(g)
 }
@@ -633,3 +753,261 @@ create_ggplot_volatility <- function(data) {
 ggplot_volatility <- create_ggplot_volatility(combined_food_data)
 print(ggplot_volatility)
 ```
+
+In terms of the food prices part, the data narrative reveals a three-act inflation story. Act I (2010-2019) represents the "Great Moderation" period with stable, predictable food price growth averaging 1-2% annually. Act II (2020-2022) depicts the "Great Disruption"—unprecedented supply chain shocks, monetary expansion, and demand shifts creating multi-decade high inflation rates. Act III (2023-2024) shows "Gradual Normalization"—inflation cooling but price levels permanently elevated, with volatility settling at new, higher equilibrium levels.
+
+The March 2020 inflection point visible across all visualizations marks when pandemic-induced disruptions transformed food markets. Supply chain bottlenecks, labor shortages, and shifting consumption patterns from restaurants to groceries created sustained inflationary pressures. The differential impact between food at home and away from home reflects these consumption shifts and varying supply chain vulnerabilities.
+
+This demonstrates how external shocks can fundamentally alter inflation dynamics, with effects persisting long after initial disruptions subside. The food sector's essential nature amplified both the immediate impacts and policy responses, creating feedback loops that sustained elevated price growth well into the recovery period.
+
+
+## Housing: When Home Becomes Unaffordable
+
+The housing market tells perhaps the most dramatic story of the past decade, one that transforms the American Dream into an increasingly distant aspiration for millions. What we see in the data is not just a gradual price increase, but a fundamental restructuring of housing affordability that began with the pandemic and shows little sign of reversing. The steady climb of shelter costs from 2010 to 2020 represented a manageable, if concerning, trend. Families could plan, save, and reasonably expect to eventually afford homeownership or rental upgrades.
+
+Then came March 2020, and everything changed. The pandemic didn't just accelerate existing trends—it shattered them entirely. Housing costs began climbing at rates that outpaced income growth by unprecedented margins. The Federal Reserve's decision to slash interest rates to near zero, while necessary to prevent economic collapse, inadvertently poured gasoline on the housing fire. Cheap money flowed into real estate markets just as changing work patterns drove families to seek larger homes in different locations. The result was a perfect storm that priced out an entire generation of potential homebuyers and renters alike.
+
+```{r}
+
+# Filter data from 2000 onwards for better storytelling
+start_date <- as.Date("2000-01-01")
+shelter_cpi <- shelter_cpi[shelter_cpi$DATE >= start_date, ]
+rent_cpi <- rent_cpi[rent_cpi$DATE >= start_date, ]
+mortgage_rate <- mortgage_rate[mortgage_rate$DATE >= start_date, ]
+gasoline_cpi <- gasoline_cpi[gasoline_cpi$DATE >= start_date, ]
+treasury_10y <- treasury_10y[treasury_10y$DATE >= start_date, ]
+fed_funds <- fed_funds[fed_funds$DATE >= start_date, ]
+
+# Define key economic events for annotations
+economic_events <- data.frame(
+  date = as.Date(c("2001-09-11", "2008-09-15", "2020-03-15", "2022-03-01")),
+  event = c("9/11 Attacks", "Lehman Brothers\nCollapse", "COVID-19\nPandemic", "Russia-Ukraine\nConflict"),
+  color = c("#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4")
+)
+
+data_start <- max(min(shelter_cpi$DATE, na.rm = TRUE), 
+                  min(rent_cpi$DATE, na.rm = TRUE), 
+                  min(mortgage_rate$DATE, na.rm = TRUE))
+data_end <- min(max(shelter_cpi$DATE, na.rm = TRUE), 
+                max(rent_cpi$DATE, na.rm = TRUE), 
+                max(mortgage_rate$DATE, na.rm = TRUE))
+
+# Combine housing data within actual date range
+housing_data <- merge(shelter_cpi, rent_cpi, by = "DATE", all = TRUE) %>%
+  merge(mortgage_rate, by = "DATE", all = TRUE) %>%
+  filter(DATE >= data_start & DATE <= data_end) %>%
+  filter(!is.na(Shelter_CPI) | !is.na(Rent_CPI) | !is.na(Mortgage_Rate))
+
+# Create improved visualization
+housing_plot <- ggplot(housing_data, aes(x = DATE)) +
+  
+  # Housing CPI lines
+  geom_line(aes(y = Shelter_CPI, color = "Shelter CPI"), 
+            size = 1.5, alpha = 0.9) +
+  geom_line(aes(y = Rent_CPI, color = "Rent CPI"), 
+            size = 1.5, alpha = 0.9) +
+  
+  # Mortgage rate on secondary axis 
+  geom_line(aes(y = Mortgage_Rate * 12, color = "30-Year Mortgage Rate"), 
+            size = 2, alpha = 0.95) +
+  
+  # COVID-19 period highlight only
+  annotate("rect", 
+           xmin = as.Date("2020-03-01"), 
+           xmax = as.Date("2021-12-31"),
+           ymin = -Inf, ymax = Inf, 
+           alpha = 0.15, fill = "#3498DB") +
+  
+  # COVID-19 marker line
+  geom_vline(xintercept = as.Date("2020-03-15"), 
+             linetype = "dashed", color = "#2C3E50", size = 1, alpha = 0.8) +
+  
+  # COVID-19 annotation
+  annotate("text", 
+           x = as.Date("2020-10-01"), 
+           y = max(housing_data$Shelter_CPI, na.rm = TRUE) * 0.95, 
+           label = "COVID-19\nPandemic Impact", 
+           fontface = "bold", size = 2.5, 
+           color = "#2C3E50", hjust = 0.5) +
+  
+  # Dual y-axis setup
+  scale_y_continuous(
+    name = "Consumer Price Index (CPI)",
+    labels = comma_format(),
+    sec.axis = sec_axis(~./12, 
+                        name = "Mortgage Rate (%)",
+                        labels = function(x) paste0(x, "%"))
+  ) +
+  
+  # Color scheme
+  scale_color_manual(
+    values = c("Shelter CPI" = "#E74C3C", 
+               "Rent CPI" = "#3498DB", 
+               "30-Year Mortgage Rate" = "#F39C12"),
+    name = "Housing Indicators"
+  ) +
+  
+  # X-axis formatting
+  scale_x_date(
+    date_breaks = "2 years", 
+    date_labels = "%Y",
+    expand = expansion(mult = c(0.02, 0.02))
+  ) +
+  
+  # Theme and styling
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(size = 18, face = "bold", hjust = 0.5, 
+                              margin = margin(b = 10)),
+    plot.subtitle = element_text(size = 14, hjust = 0.5, 
+                                 color = "#34495E", margin = margin(b = 20)),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold", size = 12),
+    legend.text = element_text(size = 11),
+    legend.box.margin = margin(t = 15),
+    axis.title = element_text(face = "bold", size = 12),
+    axis.title.y.right = element_text(color = "#F39C12"),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 11),
+    axis.text.y = element_text(size = 11),
+    axis.text.y.right = element_text(color = "#F39C12", size = 11),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(alpha = 0.3),
+    plot.background = element_rect(fill = "white", color = NA),
+    plot.margin = margin(20, 20, 20, 20),
+    plot.caption = element_text(size = 10, color = "#7F8C8D", hjust = 1)
+  ) +
+  
+  # Labels
+  labs(
+    title = "Housing Costs Through the Pandemic Era",
+    subtitle = "Time-Series Evidence of COVID-19's Impact on U.S. Shelter Affordability",
+    x = "Year",
+    caption = "Data: Bureau of Labor Statistics & Federal Reserve Economic Data"
+  )
+
+# Display the plot with larger optimal size
+options(repr.plot.width = 16, repr.plot.height = 10)
+print(housing_plot)
+
+```
+
+
+## Monetary Policy: The Double-Edged Sword of Emergency Response
+
+The interest rate story reads like a tale of good intentions yielding complicated consequences. When COVID-19 struck, the Federal Reserve acted with unprecedented speed and force, dropping rates to essentially zero within weeks. This decisive action prevented a financial system collapse and kept credit flowing during the darkest days of lockdowns. The data shows this emergency response working exactly as intended—markets stabilized, borrowing costs plummeted, and economic activity gradually resumed.
+
+But the same aggressive accommodation that saved the economy in 2020 became its burden by 2022. As inflation surged beyond anyone's expectations, the Fed found itself forced into an equally dramatic reversal. The sharp spike in both short and long-term rates visible in our data represents one of the most aggressive tightening cycles in modern monetary history. What makes this story particularly compelling is how it reveals the inherent tension in central banking: the tools powerful enough to rescue an economy in crisis are often too powerful to use without creating new problems down the line.
+
+```{r}
+
+# Combine data
+interest_data <- merge(treasury_10y, fed_funds, by = "DATE", all = TRUE) %>%
+  filter(!is.na(Treasury_10Y), !is.na(Fed_Funds_Rate)) %>%
+  mutate(Yield_Spread = Treasury_10Y - Fed_Funds_Rate)
+
+# Create simple plotly chart
+p <- plot_ly(interest_data, x = ~DATE) %>%
+  
+  # Add Fed Funds Rate
+  add_lines(y = ~Fed_Funds_Rate, name = 'Federal Funds Rate', 
+            line = list(color = '#E74C3C', width = 3)) %>%
+  
+  # Add 10-Year Treasury
+  add_lines(y = ~Treasury_10Y, name = '10-Year Treasury', 
+            line = list(color = '#3498DB', width = 3)) %>%
+  
+  # Add yield spread
+  add_lines(y = ~Yield_Spread, name = 'Yield Spread', 
+            line = list(color = '#95A5A6', width = 2, dash = 'dot')) %>%
+    
+  # Add COVID-19 vertical line
+  add_segments(x = as.Date("2020-03-15"), xend = as.Date("2020-03-15"),
+               y = 0, yend = 8, 
+               line = list(color = "#2C3E50", width = 2, dash = "dash"),
+               name = "COVID-19 Pandemic", showlegend = FALSE) %>%
+  
+  # Simple layout
+  layout(
+    title = "Monetary Policy Response: Interest Rates During COVID-19 Era",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Interest Rate (%)"),
+    hovermode = 'x'
+  )
+
+# Display the plot
+p
+```
+
+## Energy: The Wild Card in America's Inflation Story
+
+Energy prices have always been the wild card in inflation discussions, but the past few years elevated that volatility to extraordinary levels. The gasoline price data captures two massive shocks that bookend the pandemic era—each telling a different story about how global events land in American driveways. The 2020 collapse in energy prices was so severe that oil futures briefly traded negative, a surreal moment when producers literally paid people to take oil off their hands as storage filled up and demand evaporated.
+
+The subsequent recovery and spike following Russia's invasion of Ukraine demonstrates how quickly energy markets can swing from deflation to inflation. For American families, this volatility translated directly into monthly budget uncertainty. The same commute that cost $40 to fill up in April 2020 suddenly required $70 by March 2022. These aren't abstract numbers—they represent real choices between filling the gas tank and buying groceries, between driving to work and finding remote alternatives, between maintaining normal routines and fundamentally altering daily life.
+
+
+```{r}
+gas_data <- gasoline_cpi %>%
+  filter(DATE >= as.Date("2010-01-01"), !is.na(Gasoline_CPI)) %>%
+  mutate(
+    YoY_Change = ((Gasoline_CPI / lag(Gasoline_CPI, 12)) - 1) * 100,
+    Crisis_Period = case_when(
+      DATE >= as.Date("2020-01-01") & DATE <= as.Date("2021-12-31") ~ "COVID-19 Pandemic",
+      DATE >= as.Date("2022-01-01") ~ "Post-COVID Inflation",
+      TRUE ~ "Normal Period"
+    )
+  )
+
+# Create subplot with multiple perspectives
+energy_plotly <- subplot(
+  # Main gasoline CPI plot
+  plot_ly(gas_data, x = ~DATE, y = ~Gasoline_CPI, type = 'scatter', mode = 'lines',
+          line = list(color = '#E67E22', width = 3), name = 'Gasoline CPI') %>%
+    add_markers(data = subset(gas_data, Crisis_Period != "Normal Period"),
+                x = ~DATE, y = ~Gasoline_CPI, color = ~Crisis_Period,
+                colors = c('#3498DB', '#F39C12'),
+                marker = list(size = 4, opacity = 0.7),
+                name = 'Crisis Periods') %>%
+    layout(yaxis = list(title = "Gasoline CPI")),
+  
+  # Year-over-year change plot
+  plot_ly(gas_data, x = ~DATE, y = ~YoY_Change, type = 'scatter', mode = 'lines',
+          line = list(color = '#8E44AD', width = 2), name = 'YoY % Change') %>%
+    add_trace(x = range(gas_data$DATE, na.rm = TRUE), y = c(0, 0), 
+              type = 'scatter', mode = 'lines',
+              line = list(dash = "dash", color = "gray", width = 1),
+              name = 'Zero Line', showlegend = FALSE) %>%
+    layout(yaxis = list(title = "YoY Change (%)")),
+  
+  nrows = 2, heights = c(0.7, 0.3), shareX = TRUE
+) %>%
+  
+  layout(
+    title = list(text = "<b>Energy Price Volatility During Economic Disruptions</b><br><sub>How COVID-19 and Geopolitical Events Shaped Gasoline Costs</sub>",
+                 font = list(size = 16)),
+    xaxis = list(title = "Year", 
+                 tickmode = "linear",
+                 dtick = "M24",
+                 tickformat = "%Y"),
+    showlegend = TRUE,
+    annotations = list(
+      list(x = as.Date("2020-04-01"), y = 150, text = "Demand Collapse<br>Negative Oil Prices",
+           showarrow = FALSE, font = list(size = 12, color = "#2C3E50"),
+           bgcolor = "rgba(255,255,255,0.8)", bordercolor = "#3498DB", borderwidth = 1,
+           xref = "x", yref = "y"),
+      list(x = as.Date("2022-03-01"), y = 380, text = "Russia-Ukraine<br>Supply Disruption",
+           showarrow = FALSE, font = list(size = 12, color = "#2C3E50"),
+           bgcolor = "rgba(255,255,255,0.8)", bordercolor = "#F39C12", borderwidth = 1,
+           xref = "x", yref = "y")
+    )
+  )
+
+# Display the energy plot
+energy_plotly
+
+```
+
+What emerges from the above three visualizations is a portrait of an economy in transition, where traditional patterns have been disrupted and new realities are still taking shape. The COVID-19 pandemic didn't simply pause normal economic life—it fundamentally altered the relationship between monetary policy, asset prices, and household budgets. Housing became less affordable even as borrowing became cheaper, energy prices swung between extremes with little warning, and families found themselves navigating an economic landscape where past experience provided little guidance for future planning.
+
+These changes represent more than statistical variations; they reflect altered life trajectories, deferred dreams, and adapted expectations. The young couple saving for their first home discovers that their target keeps moving further away. The family planning a budget finds that energy costs make mockery of careful calculations. The retiree on fixed income watches purchasing power erode as the very policies meant to support the economy inflate away their savings.
+
+The data tells us that we're living through a period where economic policy has become more powerful and more consequential than ever before. The tools that central banks and governments wield can prevent depressions, but they can also accidentally create asset bubbles, affordability crises, and wealth inequality. Understanding these patterns isn't just an academic exercise—it's essential for anyone trying to navigate an economy where the old rules no longer seem to apply.
