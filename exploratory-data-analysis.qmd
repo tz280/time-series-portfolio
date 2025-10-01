@@ -3,7 +3,7 @@ title: "Exploratory Data Analysis"
 format:
   html:
     toc: true
-    toc-depth: 3
+    toc-depth: 4
     link-external-newwindow: true
 code-fold: true
 code-summary: "Show Code"
@@ -13,23 +13,15 @@ execute:
 editor : source
 ---
 
+## Food Inflation and the Cost of Living: An Essential Connection
+
+Food represents the most immediate and unavoidable component of household cost of living. Unlike discretionary expenses that can be deferred or eliminated, food consumption is fixed—families must eat regardless of price levels. This makes food inflation uniquely impactful on household budgets, particularly for lower-income families who allocate 15-20% of their income to food compared to 10-12% for higher-income households.
+
+The 2010-2024 period captured in this analysis spans a fundamental transition in American food affordability. What began as a decade of predictable, manageable price increases transformed into the most rapid food cost acceleration in forty years. For households operating on fixed or slowly-growing incomes, this wasn't an abstract economic statistic—it was the difference between filling a grocery cart for $100 versus $130, between weekly restaurant meals becoming monthly luxuries, between comfortable budgeting and constant financial stress.
+
+The time series analysis that follows dissects this transformation through multiple lenses: trend identification reveals the structural break at COVID-19; autocorrelation analysis confirms price increases are permanent rather than reversible; decomposition shows trend dominance over seasonality; and stationarity tests prove each inflation shock resets the baseline permanently higher. Together, these technical findings translate to a simple household reality: food costs won't return to pre-pandemic levels, budget adjustments must be permanent, and the middle-class consumption patterns of 2019 now require upper-middle-class incomes in 2024.
+
 ```{r}
-# Food Inflation Exploratory Data Analysis (EDA) - Complete
-# Time Series Analysis with Components, Lag Plots, Decomposition, ACF/PACF, ADF Tests
-
-# Required packages
-required_packages <- c(
-  "tidyverse", "lubridate", "ggplot2", "forecast", "tseries", 
-  "gridExtra", "viridis", "zoo", "TTR"
-)
-
-# Install missing packages
-new_packages <- required_packages[!(required_packages %in% installed.packages()[,"Package"])]
-if(length(new_packages)) {
-  cat("Installing packages:", paste(new_packages, collapse = ", "), "\n")
-  install.packages(new_packages)
-}
-
 # Load libraries
 library(tidyverse)
 library(lubridate)
@@ -40,6 +32,16 @@ library(gridExtra)
 library(viridis)
 library(zoo)
 library(TTR)
+library(astsa) 
+library(xts)
+library(fpp2)
+library(fma)
+library(TSstudio)
+library(quantmod)
+library(tidyquant)
+library(plotly)
+library(dplyr)
+library(reshape2)
 
 # Set theme
 theme_set(theme_minimal() + 
@@ -50,13 +52,9 @@ theme_set(theme_minimal() +
     axis.text = element_text(size = 10)
   ))
 
-cat("✓ Libraries loaded\n")
-```
-```{r}
 # Load data function
 load_fred_csv <- function(file_path, series_name) {
-  cat("Loading", series_name, "from", file_path, "...\n")
-  
+
   tryCatch({
     data <- read_csv(file_path, show_col_types = FALSE)
     
@@ -75,7 +73,6 @@ load_fred_csv <- function(file_path, series_name) {
       filter(!is.na(date), !is.na(value)) %>%
       arrange(date)
     
-    cat("✓ Loaded", nrow(data), "observations\n")
     return(data)
     
   }, error = function(e) {
@@ -116,10 +113,10 @@ for (i in 2:length(loaded_data)) {
 combined_food_data <- combined_food_data %>%
   arrange(date) %>%
   filter(if_any(-date, ~ !is.na(.x)))
-
-cat("✓ Combined dataset:", nrow(combined_food_data), "observations\n")
-cat("Date range:", min(combined_food_data$date), "to", max(combined_food_data$date), "\n\n")
 ```
+
+### Food Inflation: The COVID-19 Structural Break
+
 ```{r}
 # TIME SERIES PLOTS AND COMPONENT IDENTIFICATION
 
@@ -167,11 +164,8 @@ analyze_ts_components <- function(ts_obj, series_name) {
       plot.subtitle = element_text(size = 12)
     ) +
     geom_vline(xintercept = as.Date("2020-03-01"), linetype = "dashed", color = "red", alpha = 0.6) +
-    geom_vline(xintercept = as.Date("2008-09-01"), linetype = "dashed", color = "blue", alpha = 0.6) +
     annotate("text", x = as.Date("2020-06-01"), y = max(ts_df$value) * 0.95, 
-             label = "COVID-19", color = "red", size = 3, angle = 90) +
-    annotate("text", x = as.Date("2009-01-01"), y = max(ts_df$value) * 0.90, 
-             label = "Financial Crisis", color = "blue", size = 3, angle = 90)
+             label = "COVID-19", color = "red", size = 3, angle = 90) 
   
   return(p)
 }
@@ -193,45 +187,19 @@ for (i in 1:length(available_vars)) {
   print(ts_plots[[i]])
 }
 
-cat("✓ Time series plots created\n")
 ```
+
+These time series demonstrate a clear structural break at the COVID-19 pandemic. Pre-2020 food prices followed stable, predictable growth patterns of roughly 2-3% annually. Post-2020, all categories accelerated sharply—groceries increased 30% in four years, equivalent to a decade of pre-pandemic inflation compressed into half the time.
+
+The "Food Away from Home" series shows the steepest and most persistent acceleration, driven by labor market pressures in service industries. The narrowing gap between grocery and restaurant inflation is significant: it eliminated the traditional household buffer of substituting home cooking for dining out during inflationary periods.
+
+What makes this particularly impactful is the synchronization across categories. When food, housing, and energy inflate simultaneously—as shown in the Overall CPI—households cannot offset one expense by reducing another. Lower-income households, which allocate larger budget shares to food, face the greatest pressure with the least flexibility to adjust.
+The data indicates this is not a temporary price shock but a regime shift. The smooth post-pandemic trajectories suggest inflation became embedded in pricing mechanisms and wage structures. This created sustained real income erosion that required both household behavioral adjustment and monetary policy intervention to address.
+
+### Lag Plot Analysis: Autocorrelation and Time Series Persistence
 ```{r}
 # LAG PLOTS ANALYSIS
-create_lag_plots <- function(ts_obj, series_name, max_lags = 4) {
-  
-  # Create lag plot data
-  ts_df <- data.frame(value = as.numeric(ts_obj))
-  
-  for(lag in 1:max_lags) {
-    ts_df[[paste0("lag_", lag)]] <- stats::lag(ts_obj, -lag)
-  }
-  
-  # Convert to long format
-  lag_long <- ts_df %>%
-    pivot_longer(cols = starts_with("lag_"), names_to = "lag_period", values_to = "lagged_value") %>%
-    mutate(lag_num = as.numeric(str_extract(lag_period, "\\d+"))) %>%
-    filter(!is.na(lagged_value))
-  
-  p <- ggplot(lag_long, aes(x = lagged_value, y = value)) +
-    geom_point(alpha = 0.6, color = "#2E8B57", size = 1.5) +
-    geom_smooth(method = "lm", color = "#FF6347", size = 1, se = TRUE) +
-    facet_wrap(~ paste("Lag", lag_num), scales = "free", ncol = 2) +
-    labs(
-      title = paste("Lag Plots Analysis:", series_name),
-      subtitle = "Scatter plots of current values vs lagged values (autocorrelation visualization)",
-      x = "Lagged Value",
-      y = "Current Value",
-      caption = "Red line shows linear relationship | Strong linear relationship indicates high autocorrelation"
-    ) +
-    theme_minimal() +
-    theme(
-      strip.background = element_rect(fill = "lightgray", alpha = 0.5),
-      strip.text = element_text(face = "bold"),
-      plot.title = element_text(size = 16, face = "bold")
-    )
-  
-  return(p)
-}
+library(forecast)
 
 # Create lag plots for each series
 for (i in 1:length(available_vars)) {
@@ -243,67 +211,32 @@ for (i in 1:length(available_vars)) {
     TRUE ~ str_to_title(str_replace_all(var_name, "_", " "))
   )
   
-  lag_plot <- create_lag_plots(ts_data[[var_name]], display_name)
+  # Create lag plot using gglagplot
+  lag_plot <- gglagplot(ts_data[[var_name]], lags = 16,do.lines=FALSE) +
+    ggtitle(paste("Lag Plots Analysis:", display_name)) +
+    xlab("Lagged Values") +
+    ylab("Current Values") +
+    theme_bw()
+  
   print(lag_plot)
 }
 
-cat("✓ Lag plots created\n")
 ```
+
+All three CPI series exhibit extremely strong positive autocorrelation across all lag periods, as evidenced by the tight clustering of points along the diagonal reference lines. This pattern reveals several key insights:
+
+The high persistence at lag 1 confirms that food prices are highly predictable in the short term—this month's prices closely predict next month's. This autocorrelation remains strong even at lag 12, indicating minimal seasonal variation in food inflation. Unlike agricultural commodities that show clear seasonal patterns, processed food CPIs demonstrate smooth, trend-dominated behavior.
+
+The structural break is visible in the color gradients, particularly in "Food at Home" CPI. Points deviate further from the reference line at higher lags (13-16), reflecting the post-pandemic acceleration that disrupted historical price relationships. The pandemic created a regime shift where past values became less reliable predictors of future values.
+"Food Away from Home" shows the most consistent linearity across all lags, suggesting restaurant prices follow an almost mechanical upward trajectory with minimal volatility. This reflects sticky pricing in service industries where menu adjustments occur infrequently but persistently.
+
+From a household perspective, this strong autocorrelation means food price increases are highly predictable but non-reversible. Unlike energy prices that can spike and retreat, food inflation exhibits a ratchet effect—prices rise and stay elevated. This creates sustained purchasing power erosion rather than temporary shocks, making budget adjustment particularly challenging for households.
+
+
+### Decomposition Analysis: Trend Dominance and Negligible Seasonality
+
 ```{r}
 # TIME SERIES DECOMPOSITION
-
-perform_decomposition <- function(ts_obj, series_name, type = "multiplicative") {
-  
-  cat("Decomposing", series_name, "using", type, "model...\n")
-  
-  # Perform decomposition
-  tryCatch({
-    if(type == "multiplicative") {
-      decomp <- decompose(ts_obj, type = "multiplicative")
-    } else {
-      decomp <- decompose(ts_obj, type = "additive")
-    }
-    
-    # Create decomposition plot
-    decomp_df <- data.frame(
-      date = as.Date(time(ts_obj)),
-      observed = as.numeric(decomp$x),
-      trend = as.numeric(decomp$trend),
-      seasonal = as.numeric(decomp$seasonal),
-      random = as.numeric(decomp$random)
-    ) %>%
-      pivot_longer(cols = -date, names_to = "component", values_to = "value") %>%
-      mutate(
-        component = factor(component, levels = c("observed", "trend", "seasonal", "random"),
-                          labels = c("Observed", "Trend", "Seasonal", "Random"))
-      )
-    
-    p <- ggplot(decomp_df, aes(x = date, y = value)) +
-      geom_line(color = "#1f77b4", size = 0.8) +
-      facet_wrap(~ component, scales = "free_y", ncol = 1) +
-      labs(
-        title = paste("Time Series Decomposition:", series_name),
-        subtitle = paste("Decomposition Type:", stringr::str_to_title(type)),
-        x = "Date",
-        y = "Component Value",
-        caption = "Classical decomposition separating trend, seasonal, and random components"
-      ) +
-      theme_minimal() +
-      theme(
-        strip.background = element_rect(fill = "lightblue", alpha = 0.3),
-        strip.text = element_text(face = "bold", size = 12),
-        plot.title = element_text(size = 16, face = "bold")
-      )
-    
-    return(list(plot = p, decomposition = decomp, success = TRUE))
-    
-  }, error = function(e) {
-    cat("Error in decomposition:", e$message, "\n")
-    return(list(plot = NULL, decomposition = NULL, success = FALSE))
-  })
-}
-
-# Perform decomposition for each series (try multiplicative first)
 decomposition_results <- list()
 
 for (i in 1:length(available_vars)) {
@@ -316,27 +249,61 @@ for (i in 1:length(available_vars)) {
   )
   
   # Try multiplicative first
-  mult_result <- perform_decomposition(ts_data[[var_name]], display_name, "multiplicative")
-  
-  if (mult_result$success) {
-    decomposition_results[[var_name]] <- mult_result
-    print(mult_result$plot)
-  } else {
+  tryCatch({
+    decomp_mult <- decompose(ts_data[[var_name]], type = "multiplicative")
+    
+    # Create plot using autoplot
+    p <- autoplot(decomp_mult) +
+      ggtitle(paste("Time Series Decomposition:", display_name)) +
+      labs(subtitle = "Decomposition Type: Multiplicative",
+           x = "Time",
+           y = "Value") 
+      theme_bw() +
+      theme(plot.title = element_text(size = 14, face = "bold"))
+    
+    print(p)
+    decomposition_results[[var_name]] <- list(decomposition = decomp_mult, type = "multiplicative")
+
+    
+  }, error = function(e) {
     # Try additive if multiplicative fails
     cat("Multiplicative failed, trying additive for", display_name, "\n")
-    add_result <- perform_decomposition(ts_data[[var_name]], display_name, "additive")
     
-    if (add_result$success) {
-      decomposition_results[[var_name]] <- add_result
-      print(add_result$plot)
-    } else {
-      cat("Both decomposition methods failed for", display_name, "\n")
-    }
-  }
+    tryCatch({
+      decomp_add <- decompose(ts_data[[var_name]], type = "additive")
+      
+      # Create plot using autoplot
+      p <- autoplot(decomp_add) +
+        ggtitle(paste("Time Series Decomposition:", display_name)) +
+        labs(subtitle = "Decomposition Type: Additive",
+             x = "Time",
+             y = "Value") 
+        theme_bw() +
+        theme(plot.title = element_text(size = 14, face = "bold"))
+      
+      print(p)
+      decomposition_results[[var_name]] <- list(decomposition = decomp_add, type = "additive")
+      cat("✓ Additive decomposition successful for", display_name, "\n\n")
+      
+    }, error = function(e2) {
+      cat("✗ Both decomposition methods failed for", display_name, "\n")
+      cat("  Error:", e2$message, "\n\n")
+    })
+  })
 }
 
-cat("✓ Time series decomposition completed\n")
 ```
+
+The multiplicative decomposition reveals that food CPI series are overwhelmingly trend-driven with minimal seasonal or random components. The seasonal fluctuations oscillate within an extremely narrow band (±0.1% around 1.0), indicating food prices exhibit virtually no calendar-based patterns. This contradicts common assumptions about harvest cycles affecting food costs—in reality, modern supply chains and processed food dominance smooth out agricultural seasonality.
+
+The trend component tells the critical story. "Food at Home" shows a decade of stability (2010-2020) followed by sharp acceleration, while "Food Away from Home" demonstrates relentless linear growth throughout. The bend in the trend curves around 2020-2021 quantifies the regime shift: the slope literally doubles, representing a structural change in inflation dynamics rather than cyclical variation.
+
+The remainder component spikes dramatically around 2020-2021 across all three series. These are shocks that the model couldn't explain through trend or seasonality—supply chain disruptions, pandemic-related demand shifts, and policy interventions. The fact that these "unexplained" deviations remain elevated post-2021 suggests the model struggles with the new inflation regime. What decomposition treats as random error is actually persistent structural change.
+
+For households, the absence of seasonality means no timing strategies exist for reducing food costs. Unlike energy bills that might be reduced by seasonal timing, food inflation is monotonic and unavoidable. The trend dominance confirms that food price increases are systematic and permanent, not temporary fluctuations households can wait out. The remainder spikes show how external shocks create step-changes in the price level that never reverse—each crisis ratchets costs higher without subsequent relief.
+
+### ACF/PACF Analysis: Non-Stationarity and Inflation Persistence
+
 ```{r}
 # ACF AND PACF ANALYSIS
 
@@ -407,8 +374,17 @@ for (i in 1:length(available_vars)) {
   print(acf_pacf_results[[var_name]]$plot)
 }
 
-cat("✓ ACF and PACF analysis completed\n")
 ```
+
+All three series display classic non-stationary characteristics. The ACF shows extremely slow, linear decay rather than rapid exponential decline—autocorrelations remain above 0.5 even at lag 20+. This confirms food prices contain a strong trend component with no mean reversion. The PACF cuts off sharply after lag 1, suggesting an autoregressive process of order 1 with an integrated component (likely ARIMA(1,1,0) or similar).
+The absence of seasonal spikes at lag 12 in both ACF and PACF is notable—no distinctive patterns appear at annual intervals. This reinforces that food inflation operates independently of agricultural cycles or holiday demand patterns. The pricing mechanisms reflect supply chain intermediation and retailer strategies rather than raw commodity seasonality.
+
+"Food Away from Home" shows the strongest persistence—its ACF decays even more slowly than groceries, and autocorrelations remain significant across all lags shown. This reflects sticky menu pricing in restaurants where costs accumulate over time but price adjustments occur infrequently in large discrete jumps rather than continuous small changes.
+
+For households, this persistence pattern means food price shocks have permanent effects. Unlike stationary processes where deviations eventually revert to mean, these series exhibit unit root behavior—each price increase becomes the new baseline. The high lag-1 autocorrelation (>0.95) indicates prices essentially follow a random walk with drift, making future costs predictable in direction (upward) but not magnitude. Families cannot budget based on historical averages because those averages become obsolete after each inflationary shock.
+
+### ADF Test: Non-Stationary Confirmation
+
 ```{r}
 # AUGMENTED DICKEY-FULLER STATIONARITY TESTS
 
@@ -498,6 +474,11 @@ perform_adf_tests <- function(ts_data, series_names) {
 # Perform ADF tests 
 adf_results <- perform_adf_tests(ts_data, available_vars)
 ```
+
+All three series fail stationarity tests with p-values near 1.0, confirming unit root presence. Food prices follow random walks—shocks are permanent, not temporary. Differencing is required before modeling. For households: price increases never reverse, each inflation episode permanently resets the cost baseline.
+
+### Making Series Stationary
+
 ```{r}
 # MAKING SERIES STATIONARY 
 make_stationary <- function(ts_obj, series_name) {
@@ -508,9 +489,7 @@ make_stationary <- function(ts_obj, series_name) {
     series_name == "cpi_all" ~ "Overall CPI (All Items)",
     TRUE ~ str_to_title(str_replace_all(series_name, "_", " "))
   )
-  
-  cat("Making", display_name, "stationary...\n")
-  
+
   # First differencing
   diff1 <- diff(ts_obj, differences = 1)
   
@@ -624,6 +603,9 @@ if(length(non_stationary_series) > 0) {
   cat("All series are already stationary!\n")
 }
 ```
+
+### Moving Average Smoothing
+
 ```{r}
 # MOVING AVERAGE SMOOTHING
 
@@ -743,11 +725,11 @@ perform_seasonal_ma_analysis <- function(ts_obj, series_name) {
     geom_line(alpha = 0.8) +
     scale_color_manual(
       values = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"), 
-      name = "Smoothing Type"
+      name = "Type"
     ) +
     scale_size_identity() +
     labs(
-      title = paste("Seasonal Moving Average Analysis:", display_name),
+      title = paste("Seasonal MA Analysis:", display_name),
       subtitle = "Different smoothing windows reveal seasonal vs trend components",
       x = "Date", 
       y = "Index Value",
@@ -759,8 +741,7 @@ perform_seasonal_ma_analysis <- function(ts_obj, series_name) {
       plot.title = element_text(size = 16, face = "bold"),
       plot.subtitle = element_text(size = 12)
     ) +
-    geom_vline(xintercept = as.Date("2020-03-01"), linetype = "dashed", color = "red", alpha = 0.5) +
-    geom_vline(xintercept = as.Date("2008-09-01"), linetype = "dashed", color = "blue", alpha = 0.5)
+    geom_vline(xintercept = as.Date("2020-03-01"), linetype = "dashed", color = "red", alpha = 0.5)
   
   return(p)
 }
@@ -774,8 +755,15 @@ for (i in 1:length(available_vars)) {
   print(seasonal_ma_plots[[var_name]])
 }
 
-cat("✓ Moving Average smoothing analysis completed\n")
 ```
+
+**Trend Dominance:** MA3, MA12, and MA24 converge tightly across all series—food inflation is purely trend-driven with no seasonal cycles. The 12-month window adds no information beyond quarterly smoothing.
+Two-Phase Structure: Pre-2020 shows flat, stable MA trajectories. Post-2020, short MAs spike first while long MAs lag by ~12 months, then all reconverge at 30% higher levels by 2024. This reconvergence proves the shift is permanent, not cyclical.
+
+**Service vs. Goods:** "Food Away from Home" shows nearly identical curves across all MA windows—restaurant prices follow mechanical upward paths. "Food at Home" exhibits slightly more short-term noise but smooths to the same trend.
+
+**Household Impact:** The MA lag meant families felt full inflation pressure 12 months before official smoothed statistics caught up. By 2024, all windows show identical elevated trajectories—no mean reversion, no relief, just permanently higher baseline costs requiring permanent budget reallocation.
+
 ```{r}
 
 # LOG TRANSFORMATION 
@@ -893,5 +881,290 @@ for (i in 1:length(available_vars)) {
   }
 }
 
-cat("✓ Log transformation analysis completed\n")
 ```
+
+## Interest Rates and Household Borrowing Costs: The Hidden Inflation Multiplier
+
+Interest rates represent the price of money itself—the cost households pay to bridge the gap between current income and major life purchases. Unlike food or energy prices that directly extract dollars from monthly budgets, interest rates determine whether families can access homeownership, vehicle ownership, and higher education at all. A mortgage rate increase from 3% to 7% doesn't just raise monthly payments—it prices millions out of the housing market entirely, forcing them into rental markets where they face the combined burden of rising rents plus inability to build home equity.
+
+The 2020-2024 period captured an unprecedented interest rate whipsaw: emergency accommodation drove rates to historic lows, creating a brief window for refinancing and purchases, followed by the fastest tightening cycle in four decades. This volatility transformed interest rates from a stable background parameter families could plan around into an unpredictable variable that invalidated multi-year financial strategies within months. The time series analysis reveals how policy-driven rate regimes exhibit high persistence within periods but abrupt transitions between them—creating a binary environment where timing luck matters more than prudent planning, and where yesterday's 3% mortgage becomes today's unobtainable dream while housing prices refuse to adjust downward.
+
+```{r}
+
+treasury_10y <- read_csv("./data/DGS10.csv")
+fed_funds <- read_csv("./data/FEDFUNDS.csv")
+
+# Rename columns
+names(treasury_10y) <- c("date", "treasury_rate")
+names(fed_funds) <- c("date", "fed_rate")
+
+# Convert dates
+treasury_10y$date <- as.Date(treasury_10y$date)
+fed_funds$date <- as.Date(fed_funds$date)
+
+# Clean data
+treasury_clean <- treasury_10y %>% filter(!is.na(treasury_rate))
+fed_clean <- fed_funds %>% filter(!is.na(fed_rate))
+
+# Find common date range
+common_start <- max(min(treasury_clean$date), min(fed_clean$date))
+common_end <- min(max(treasury_clean$date), max(fed_clean$date))
+
+treasury_clean <- treasury_clean %>% filter(date >= common_start & date <= common_end)
+fed_clean <- fed_clean %>% filter(date >= common_start & date <= common_end)
+
+# Convert to time series
+treasury_ts <- ts(treasury_clean$treasury_rate, 
+                 start = c(year(common_start), month(common_start)), 
+                 frequency = 12)
+fed_ts <- ts(fed_clean$fed_rate, 
+            start = c(year(common_start), month(common_start)), 
+            frequency = 12)
+# TIME SERIES PLOTS
+p1 <- autoplot(treasury_ts) +
+  ggtitle("10-Year Treasury Rate (1954-2024)") +
+  xlab("Year") +
+  ylab("Interest Rate (%)") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 12, face = "bold"))
+
+p2 <- autoplot(fed_ts) +
+  ggtitle("Federal Funds Rate (1954-2024)") +
+  xlab("Year") +
+  ylab("Interest Rate (%)") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 12, face = "bold"))
+
+grid.arrange(p1, p2, ncol = 1)
+
+combined_data <- data.frame(
+  date = treasury_clean$date,
+  treasury = treasury_clean$treasury_rate,
+  fed_funds = fed_clean$fed_rate
+)
+
+p3 <- ggplot(combined_data, aes(x = date)) +
+  geom_line(aes(y = treasury, color = "10-Year Treasury"), size = 1) +
+  geom_line(aes(y = fed_funds, color = "Federal Funds Rate"), size = 1) +
+  scale_color_manual(values = c("10-Year Treasury" = "#3498DB", 
+                               "Federal Funds Rate" = "#E74C3C")) +
+  labs(title = "Interest Rate Environment: Policy vs Market Dynamics (1954-2024)",
+       x = "Year",
+       y = "Interest Rate (%)",
+       color = "Rate Type") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom")
+
+print(p3)
+
+```
+
+The Federal Funds Rate shows the Fed's dramatic COVID-19 response: near-zero rates (March 2020) followed by the fastest tightening cycle in decades (2022-2023), reaching 5.5%. This whipsaw movement directly impacted household borrowing costs—mortgage rates, credit cards, auto loans all tracked the policy shift.
+
+The 10-Year Treasury Rate reflects market expectations rather than Fed policy. Its more gradual movement and current decline (despite elevated Fed rates) suggests markets anticipate economic weakness forcing eventual rate cuts. The gap between policy rates and market rates reveals skepticism about sustainability of restrictive policy.
+
+Household Impact: The 2020-2021 ultra-low rates enabled some families to refinance mortgages at sub-3% (permanent monthly payment reductions). However, the subsequent spike to 7%+ mortgage rates by 2023 priced millions out of homeownership entirely. For existing homeowners with fixed-rate mortgages, this created "lock-in" effects—unable to move without trading 3% rates for 7%+ rates. For renters and new buyers, the dual pressure of elevated home prices (from the low-rate boom) plus high borrowing costs created unprecedented affordability barriers. Credit card rates exceeding 20% added pressure to households already stretched by food and housing inflation.
+
+### Lag Plot Analysis: Interest Rate Autocorrelation and Policy Regimes
+
+```{r}
+# LAG PLOTS
+
+p_lag_treasury <- gglagplot(treasury_ts, lags = 16) +
+  ggtitle("10-Year Treasury Rate: Lag Plots (Lags 1-16)") +
+  xlab("Lagged Values") +
+  ylab("Current Values") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 14, face = "bold"))
+
+print(p_lag_treasury)
+
+p_lag_fed <- gglagplot(fed_ts, lags = 16) +
+  ggtitle("Federal Funds Rate: Lag Plots (Lags 1-16)") +
+  xlab("Lagged Values") +
+  ylab("Current Values") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 14, face = "bold"))
+
+print(p_lag_fed)
+
+```
+
+**10-Year Treasury:** Strong positive correlation at lag 1 weakens progressively through lag 16. The color clustering reveals regime-dependent behavior—tight bunching during stable periods, scattered dispersion during transition phases (visible as color separation at lags 5-8). No seasonal patterns at lag 12, confirming interest rates are policy/cycle-driven, not calendar-driven.
+
+**Federal Funds Rate:** Exhibits distinct structural breaks. Lag 1-4 shows bifurcation—zero-rate period (2010-2015, 2020-2021) clusters at origin while normal periods follow diagonal. At longer lags (13-16), horizontal banding appears at 0% and 5%+ levels, reflecting the Fed's tendency to hold rates constant for extended periods rather than adjusting continuously. This "staircase" behavior creates household uncertainty—borrowing costs jump suddenly then freeze, making financial planning difficult.
+
+**Household Implications:** The weak autocorrelation at longer lags means past rates poorly predict future rates beyond 6-12 months. Unlike food inflation's high persistence, interest rate regimes can shift abruptly due to policy changes. Families refinancing mortgages or taking variable-rate debt face unpredictable cost trajectories—rates that seem stable can spike within months during policy pivots.
+
+### Decomposition Analysis: Interest Rates Driven by Policy, Not Seasons
+
+```{r}
+# DECOMPOSITION
+
+tryCatch({
+  treasury_decomp <- decompose(treasury_ts, type = "additive")
+  
+  p_decomp_treasury <- autoplot(treasury_decomp) +
+    ggtitle("10-Year Treasury Rate: Time Series Decomposition") +
+    labs(subtitle = "Decomposition Type: Additive",
+         x = "Time",
+         y = "Value") +
+    theme_bw() +
+    theme(plot.title = element_text(size = 14, face = "bold"))
+  
+  print(p_decomp_treasury)
+}, error = function(e) {})
+
+tryCatch({
+  fed_decomp <- decompose(fed_ts, type = "additive")
+  
+  p_decomp_fed <- autoplot(fed_decomp) +
+    ggtitle("Federal Funds Rate: Time Series Decomposition") +
+    labs(subtitle = "Decomposition Type: Additive",
+         x = "Time",
+         y = "Value") +
+    theme_bw() +
+    theme(plot.title = element_text(size = 14, face = "bold"))
+  
+  print(p_decomp_fed)
+}, error = function(e) {})
+
+```
+
+**10-Year Treasury:** Trend dominates—showing long business cycles (2010s decline, 2020s rise). Seasonal component is negligible (±0.15%), confirming interest rates have zero calendar-based patterns. Remainder spikes during 2020-2023 reflect COVID-19 shock and inflation surprise—volatility the model couldn't explain through trend alone.
+
+**Federal Funds Rate:** Exhibits pure step-function trend—flat at 0% (2010-2015, 2020-2021), gradual rise (2016-2019), vertical jump to 5%+ (2022-2023). Seasonal component is virtually flat, remainder concentrated around policy shift periods. This "staircase" pattern reflects deliberate Fed decisions rather than gradual market evolution.
+
+**Comparison:** Treasury rates show smooth cyclical trends; Fed rates show abrupt regime changes. The remainder components tell different stories—Treasury volatility reflects market uncertainty, Fed remainder reflects implementation lags between policy announcements and actual rate changes.
+
+**Household Impact:** Zero seasonality means no timing advantage for major borrowing decisions. The large remainder spikes during 2020-2023 quantify household uncertainty—borrowing costs deviated massively from predictable patterns, making financial planning nearly impossible during the policy whipsaw period.
+
+### ACF/PACF Analysis: Non-Stationarity and Policy Persistence
+
+```{r}
+# ACF AND PACF
+par(mfrow = c(2, 2))
+acf(treasury_ts, lag.max = 40, main = "10-Year Treasury Rate - ACF")
+pacf(treasury_ts, lag.max = 40, main = "10-Year Treasury Rate - PACF")
+acf(fed_ts, lag.max = 40, main = "Federal Funds Rate - ACF")
+pacf(fed_ts, lag.max = 40, main = "Federal Funds Rate - PACF")
+par(mfrow = c(1, 1))
+
+```
+
+Both series show clear non-stationarity: ACF decays slowly rather than dropping sharply, with significant autocorrelation persisting beyond 30 lags. PACF cuts off after lag 1-2, suggesting AR(1) or AR(2) processes with integrated components.
+
+**10-Year Treasury:** Gradual ACF decay reflects smooth cyclical behavior driven by business cycles and inflation expectations. The negative autocorrelation appearing around lag 18-20 suggests mean-reverting tendencies at longer horizons—markets eventually expect rates to return toward long-run equilibrium.
+
+**Federal Funds Rate:** Extremely high persistence (ACF>0.8 through lag 15) reflects Fed policy inertia—rates stay constant for extended periods. The sharp PACF cutoff after lag 1 indicates current rates almost perfectly predict next month's rates, confirming the staircase pattern where the Fed holds rates steady between discrete adjustment cycles.
+
+**Household Implications:** High persistence means rate changes, once implemented, persist for years. Families refinancing during low-rate windows locked in decade-long savings. Conversely, those borrowing during high-rate periods face extended periods of elevated costs. The slow ACF decay confirms interest rate regimes are sticky—unlike volatile asset prices, borrowing cost environments change infrequently but dramatically, requiring long-term financial planning rather than short-term timing strategies.
+
+### Differencing Results: Achieving Stationarity
+
+```{r}
+# ADF TEST
+
+treasury_adf <- adf.test(treasury_ts, alternative = "stationary")
+fed_adf <- adf.test(fed_ts, alternative = "stationary")
+
+
+# DIFFERENCING
+
+
+treasury_diff <- diff(treasury_ts, differences = 1)
+fed_diff <- diff(fed_ts, differences = 1)
+
+par(mfrow = c(2, 2))
+plot(treasury_ts, main = "Original 10-Year Treasury Rate", ylab = "Rate (%)")
+plot(treasury_diff, main = "First Differenced 10-Year Treasury Rate", ylab = "Change (%)")
+plot(fed_ts, main = "Original Federal Funds Rate", ylab = "Rate (%)")
+plot(fed_diff, main = "First Differenced Federal Funds Rate", ylab = "Change (%)")
+par(mfrow = c(1, 1))
+
+par(mfrow = c(2, 2))
+acf(treasury_diff, lag.max = 40, main = "Differenced Treasury Rate - ACF")
+pacf(treasury_diff, lag.max = 40, main = "Differenced Treasury Rate - PACF")
+acf(fed_diff, lag.max = 40, main = "Differenced Fed Funds Rate - ACF")
+pacf(fed_diff, lag.max = 40, main = "Differenced Fed Funds Rate - PACF")
+par(mfrow = c(1, 1))
+
+treasury_diff_adf <- adf.test(treasury_diff, alternative = "stationary")
+fed_diff_adf <- adf.test(fed_diff, alternative = "stationary")
+
+```
+
+**Visual Transformation:** Original series show clear trends and non-stationarity. Differenced series fluctuate around zero with no visible drift—successful stationarity transformation. Treasury rate differences show consistent volatility; Fed rate differences reveal the 2020 collapse and 2022 spike as extreme outliers.
+
+**ACF/PACF Confirmation:** Post-differencing, both series show rapid ACF decay to near-zero within 3-5 lags—classic stationary behavior. The Fed Funds ACF still shows slight elevated correlation at early lags due to the stepped adjustment pattern, but overall the unit root is eliminated.
+Treasury vs. Fed Dynamics: Differenced Treasury rates exhibit normally-distributed month-to-month changes (±0.3%), reflecting continuous market adjustment. Differenced Fed rates show long periods near zero punctuated by extreme spikes (±0.5%), confirming discrete policy adjustments rather than gradual evolution.
+
+**Household Implications:** The differenced series represent rate change volatility—how unpredictably borrowing costs shift month-to-month. Treasury volatility averaged ±0.15% monthly but spiked to ±0.6% during 2020-2022, quantifying the uncertainty households faced. The 2020-2022 period shows unprecedented rate-change volatility in both series, making multi-year financial planning (mortgages, car loans, college financing) exceptionally difficult as future borrowing costs became unpredictable even 6-12 months forward.
+
+### Moving Average Smoothing
+```{r}
+ma_windows <- c(3, 6, 12, 24, 36)
+
+calculate_ma <- function(ts_data, window) {
+  ma_result <- stats::filter(ts_data, rep(1/window, window), sides = 2)
+  return(ma_result)
+}
+
+treasury_ma <- lapply(ma_windows, function(w) calculate_ma(treasury_ts, w))
+names(treasury_ma) <- paste("MA", ma_windows, sep = "_")
+
+fed_ma <- lapply(ma_windows, function(w) calculate_ma(fed_ts, w))
+names(fed_ma) <- paste("MA", ma_windows, sep = "_")
+
+create_ma_plot <- function(original_ts, ma_list, title_prefix) {
+  time_index <- time(original_ts)
+  
+  plot_data <- data.frame(
+    time = as.numeric(time_index),
+    original = as.numeric(original_ts)
+  )
+  
+  for(i in 1:length(ma_list)) {
+    plot_data[[names(ma_list)[i]]] <- as.numeric(ma_list[[i]])
+  }
+  
+  p <- ggplot(plot_data, aes(x = time)) +
+    geom_line(aes(y = original, color = "Original"), alpha = 0.7) +
+    geom_line(aes(y = MA_3, color = "MA(3)"), size = 0.8) +
+    geom_line(aes(y = MA_6, color = "MA(6)"), size = 0.8) +
+    geom_line(aes(y = MA_12, color = "MA(12)"), size = 1) +
+    geom_line(aes(y = MA_24, color = "MA(24)"), size = 1) +
+    geom_line(aes(y = MA_36, color = "MA(36)"), size = 1.2) +
+    scale_color_manual(values = c(
+      "Original" = "gray70",
+      "MA(3)" = "#E74C3C",
+      "MA(6)" = "#F39C12", 
+      "MA(12)" = "#3498DB",
+      "MA(24)" = "#2ECC71",
+      "MA(36)" = "#9B59B6"
+    )) +
+    labs(title = paste(title_prefix, "- Moving Average Smoothing"),
+         x = "Year",
+         y = "Interest Rate (%)",
+         color = "Series") +
+    theme_minimal() +
+    theme(legend.position = "bottom")
+  
+  return(p)
+}
+
+treasury_ma_plot <- create_ma_plot(treasury_ts, treasury_ma, "10-Year Treasury Rate")
+fed_ma_plot <- create_ma_plot(fed_ts, fed_ma, "Federal Funds Rate")
+
+print(treasury_ma_plot)
+print(fed_ma_plot)
+```
+
+**10-Year Treasury:** All MA windows converge closely during 2010-2019, confirming stable rate environment. Post-2020 shows dramatic divergence—short MAs (3, 6) capture the rapid collapse to 0.7% and subsequent spike to 4.5%, while MA36 lags significantly. By 2024, MAs reconverge around 4%, but the gap during 2020-2023 quantifies the unprecedented volatility households faced.
+
+**Federal Funds Rate:** The staircase pattern remains visible even in long MAs. MA36 completely smooths out the 2016-2019 gradual rise, showing only the zero-rate plateaus (2010-2015, 2020-2021) and the 2022-2023 vertical jump. Short MAs track the discrete policy steps, while long MAs reveal just two regimes: accommodation versus restriction, with almost no middle ground.
+
+**Volatility Contrast:** Treasury MA divergence during 2020-2023 exceeded any prior period—the gap between MA3 and MA36 reached 2 percentage points, reflecting genuine market uncertainty. Fed rate MAs show less divergence because changes were deliberate policy steps, not market reactions.
+
+**Household Impact:** The Treasury MA spread during 2020-2023 measures the unpredictability premium households paid. When 3-month and 36-month moving averages diverge by 2%, long-term financial planning becomes impossible—today's mortgage rate provides zero information about refinancing options 2-3 years forward. The subsequent reconvergence offers no relief because rates stabilized at elevated levels, not pre-pandemic baselines.
