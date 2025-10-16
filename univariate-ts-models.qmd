@@ -1,0 +1,572 @@
+---
+title: "Univariate Time Series Models"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 4
+    link-external-newwindow: true
+code-fold: true
+code-summary: "Show Code"
+execute:
+  warning: false
+  message: false
+editor : source
+---
+
+```{r}
+#| label: setup
+#| include: false
+suppressPackageStartupMessages({
+  library(readr); library(dplyr); library(zoo); library(lubridate)
+  library(forecast); library(tseries); library(ggplot2); library(knitr);library(astsa)
+})
+
+fred_read <- function(path){
+  read_csv(path, show_col_types = FALSE) |>
+    rename(date = 1, value = 2) |>
+    mutate(date = as.Date(date), value = suppressWarnings(as.numeric(value))) |>
+    filter(!is.na(value))
+}
+
+to_monthly <- function(df, fun = mean){
+  df |>
+    mutate(ym = as.yearmon(date)) |>
+    group_by(ym) |>
+    summarize(value = fun(value, na.rm = TRUE), .groups = "drop") |>
+    arrange(ym)
+}
+
+ym_start <- function(df){
+  y <- as.numeric(min(df$ym)); y_int <- floor(y); m <- round((y - y_int) * 12) + 1
+  c(y_int, m)
+}
+
+safe_arima <- function(x, order, seasonal = NULL, include.drift = FALSE) {
+  # Try ML; if it fails, fall back to CSS-ML; if still fails, return NULL
+  tryCatch({
+    Arima(x, order = order, seasonal = seasonal,
+          include.drift = include.drift, method = "ML")
+  }, error = function(e) {
+    tryCatch({
+      Arima(x, order = order, seasonal = seasonal,
+            include.drift = include.drift, method = "CSS-ML")
+    }, error = function(e2) {
+      NULL
+    })
+  })
+}
+
+grid_arima <- function(x, d = 1, pmax = 4, qmax = 4, seasonal = NULL) {
+  # Robust grid search that skips unstable models and never stops the render
+  n <- (pmax + 1) * (qmax + 1)
+  rows <- vector("list", n)
+  k <- 1
+  for (p in 0:pmax) {
+    for (q in 0:qmax) {
+      fit <- safe_arima(
+        x,
+        order = c(p, d, q),
+        seasonal = seasonal,
+        include.drift = (d == 1)
+      )
+      if (is.null(fit)) {
+        rows[[k]] <- data.frame(
+          p = p, d = d, q = q,
+          AIC = NA_real_, BIC = NA_real_, AICc = NA_real_,
+          status = "failed"
+        )
+      } else {
+        rows[[k]] <- data.frame(
+          p = p, d = d, q = q,
+          AIC = AIC(fit),
+          BIC = BIC(fit),
+          AICc = if (!is.null(fit$aicc)) fit$aicc else NA_real_,
+          status = "ok"
+        )
+      }
+      k <- k + 1
+    }
+  }
+  out <- dplyr::bind_rows(rows)
+  out[order(out$AIC), ]
+}
+```
+
+# Data Loading & Preprocessing
+
+```{r}
+# Paths
+path <- "data"
+# CPI (headline + food)
+fh   <- to_monthly(fred_read(file.path(path, "CUSR0000SAF11.csv"))) # Food at Home
+fa   <- to_monthly(fred_read(file.path(path, "CUSR0000SEFV.csv")))  # Food Away from Home
+cpi  <- to_monthly(fred_read(file.path(path, "CPIAUCSL.csv")))      # Overall CPI
+# Rates
+dgs  <- to_monthly(fred_read(file.path(path, "DGS10.csv")))         # 10Y Treasury
+ff   <- to_monthly(fred_read(file.path(path, "FEDFUNDS.csv")))      # Fed Funds
+
+# ts objects (monthly)
+fh_ts  <- ts(fh$value,  start = ym_start(fh),  frequency = 12)
+fa_ts  <- ts(fa$value,  start = ym_start(fa),  frequency = 12)
+cpi_ts <- ts(cpi$value, start = ym_start(cpi), frequency = 12)
+dgs_ts <- ts(dgs$value, start = ym_start(dgs), frequency = 12)
+ff_ts  <- ts(ff$value,  start = ym_start(ff),  frequency = 12)
+
+# log-transform for CPI-like series
+fh_log  <- log(fh_ts)
+fa_log  <- log(fa_ts)
+cpi_log <- log(cpi_ts)
+```
+
+> **Note.** CPI series are modeled on the **log scale** (common in inflation work). Interest rates remain on levels.
+
+---
+
+## Overall CPI (Headline) 
+
+::: {.panel-tabset}
+
+### ACF & PACF {.active}
+
+```{r}
+# ACF/PACF on differenced log CPI (d=1, seasonal D=1 at s=12)
+cpid <- diff(diff(cpi_log, 1), 12)
+set.seed(123)
+GG1 <- ggAcf(cpid) + ggtitle("ACF: Δ & seasonal Δ log(CPI)")
+GG2 <- ggPacf(cpid) + ggtitle("PACF: Δ & seasonal Δ log(CPI)")
+GG1; GG2
+```
+
+**Takeaway.** Clear seasonal pattern and lag-1 behavior → try **SARIMA(0,1,1)(0,1,1)[12]**.
+
+### Manual ARIMA
+
+```{r}
+# Grid over p,q with seasonal part fixed at (0,1,1)[12]
+manual_cpi <- grid_arima(cpi_log, d = 1, pmax = 4, qmax = 4,
+                         seasonal = list(order = c(0,1,1), period = 12))
+knitr::kable(head(manual_cpi, 10), digits = 3)
+```
+
+**Reading the table.** Lower AIC/BIC indicates better fit; top rows are the leading candidates.
+
+### Equation
+
+The airline form (backshift \(L\)):
+
+$$
+(1-L)(1-L^{12})\,y_t \;=\; (1+0.5817\,L)\,(1-0.9211\,L^{12})\,\varepsilon_t,
+\qquad y_t=\log(\mathrm{CPI}).
+$$
+
+Expanded right-hand side:
+
+$$
+(1-L)(1-L^{12})\,y_t
+=\big(1 + 0.5817\,L - 0.9211\,L^{12} - 0.5358\,L^{13}\big)\,\varepsilon_t,
+$$
+
+where $0.5358 \approx 0.9211\times 0.5817.$
+
+```{r}
+astsa::sarima(cpi_log, 0, 1, 1,  0, 1, 1,  12)
+```
+
+### auto.arima()
+
+```{r}
+auto_cpi <- auto.arima(cpi_log, seasonal = TRUE)
+auto_cpi
+```
+
+**Comment.** auto.arima may propose close variants (e.g., (0,2,2)); prefer the model with the best diagnostics and lowest IC.
+
+### Forecast
+
+```{r}
+fit_cpi <- Arima(cpi_log, order = c(0,1,1), seasonal = list(order = c(0,1,1), period = 12))
+fc_cpi  <- forecast(fit_cpi, h = 12)
+autoplot(fc_cpi) + ggtitle("Forecast: Overall CPI (log)")
+```
+
+**Interpretation.** Short-run uncertainty is modest; bands widen at longer horizons.
+
+### Benchmark Comparison
+
+```{r}
+autoplot(cpi_log) +
+  autolayer(meanf(cpi_log, h = 12),  series = "Mean",     PI = FALSE) +
+  autolayer(naive(cpi_log, h = 12),  series = "Naive",    PI = FALSE) +
+  autolayer(snaive(cpi_log, h = 12), series = "Seasonal", PI = FALSE) +
+  autolayer(fc_cpi, series = "SARIMA", PI = FALSE) +
+  ggtitle("Benchmarks vs SARIMA: log(CPI)") + xlab("Time") + ylab("log(CPI)")
+```
+
+**Result.** SARIMA should outperform Seasonal Naive in RMSE/MAE; if not, revisit seasonal terms.
+
+::: 
+
+---
+
+## Food at Home CPI 
+
+::: {.panel-tabset}
+
+### ACF & PACF {.active}
+
+```{r}
+fh_d <- diff(diff(fh_log, 1), 12)
+set.seed(123)
+GG1 <- ggAcf(fh_d) + ggtitle("ACF: Δ & seasonal Δ log(Food at Home)")
+GG2 <- ggPacf(fh_d) + ggtitle("PACF: Δ & seasonal Δ log(Food at Home)")
+GG1; GG2
+```
+
+**Takeaway.** Seasonality is strong; an airline-style model **SARIMA(0,1,1)(0,1,1)[12]** is a natural baseline.
+
+### Manual ARIMA
+
+```{r}
+manual_fh <- grid_arima(fh_log, d = 1, pmax = 4, qmax = 4,
+                        seasonal = list(order = c(0,1,1), period = 12))
+knitr::kable(head(manual_fh, 10), digits = 3)
+```
+
+### Equation
+
+The airline form (backshift \(L\)):
+
+$$
+(1-L)(1-L^{12})\,y_t \;=\; (1+0.3428\,L)\,(1-0.9994\,L^{12})\,\varepsilon_t,
+\qquad y_t=\log(\mathrm{Food\ at\ Home\ CPI}).
+$$
+
+Expanded right-hand side:
+
+$$
+(1-L)(1-L^{12})\,y_t
+=\big(1 + 0.3428\,L - 0.9994\,L^{12} - 0.3426\,L^{13}\big)\,\varepsilon_t,
+$$
+
+where $0.3426 \approx 0.9994\times 0.3428.$
+
+```{r}
+# Food at Home (log), SARIMA(0,1,1)(0,1,1)[12]
+astsa::sarima(fh_log, 0, 1, 1,  0, 1, 1,  12)
+
+```
+
+### auto.arima()
+
+```{r}
+auto_fh <- auto.arima(fh_log, seasonal = TRUE)
+auto_fh
+```
+
+### Forecast
+
+```{r}
+fit_fh <- Arima(fh_log, order = c(0,1,1), seasonal = list(order = c(0,1,1), period = 12))
+fc_fh  <- forecast(fit_fh, h = 12)
+autoplot(fc_fh) + ggtitle("Forecast: Food at Home CPI (log)")
+```
+
+### Benchmark Comparison
+
+```{r}
+autoplot(fh_log) +
+  autolayer(snaive(fh_log, h = 12), series = "Seasonal", PI = FALSE) +
+  autolayer(fc_fh, series = "SARIMA", PI = FALSE) +
+  ggtitle("Benchmarks vs SARIMA: log(Food at Home)")
+```
+
+::: 
+
+---
+
+## Food Away from Home CPI 
+
+::: {.panel-tabset}
+
+### ACF & PACF {.active}
+
+```{r}
+fa_d <- diff(diff(fa_log, 1), 12)
+set.seed(123)
+GG1 <- ggAcf(fa_d) + ggtitle("ACF: Δ & seasonal Δ log(Food Away)")
+GG2 <- ggPacf(fa_d) + ggtitle("PACF: Δ & seasonal Δ log(Food Away)")
+GG1; GG2
+```
+
+### Manual ARIMA
+
+```{r}
+manual_fa <- grid_arima(fa_log, d = 1, pmax = 4, qmax = 4,
+                        seasonal = list(order = c(0,1,1), period = 12))
+knitr::kable(head(manual_fa, 10), digits = 3)
+```
+
+### Equation
+
+The airline form (backshift \(L\)):
+
+$$
+(1-L)(1-L^{12})\,y_t \;=\; (1+0.5485\,L)\,(1-0.6023\,L^{12})\,\varepsilon_t,
+\qquad y_t=\log(\mathrm{Food\ Away\ from\ Home\ CPI}).
+$$
+
+Expanded right-hand side:
+
+$$
+(1-L)(1-L^{12})\,y_t
+=\big(1 + 0.5485\,L - 0.6023\,L^{12} - 0.3304\,L^{13}\big)\,\varepsilon_t,
+$$
+
+where $0.3304 \approx 0.5485\times 0.6023.$
+
+```{r}
+# Food Away (log), SARIMA(0,1,1)(0,1,1)[12]
+astsa::sarima(fa_log, 0, 1, 1,  0, 1, 1,  12)
+
+```
+
+### auto.arima()
+
+```{r}
+auto_fa <- auto.arima(fa_log, seasonal = TRUE)
+auto_fa
+```
+
+### Forecast
+
+```{r}
+fit_fa <- Arima(fa_log, order = c(0,1,1), seasonal = list(order = c(0,1,1), period = 12))
+fc_fa  <- forecast(fit_fa, h = 12)
+autoplot(fc_fa) + ggtitle("Forecast: Food Away CPI (log)")
+```
+
+### Benchmark Comparison
+
+```{r}
+autoplot(fa_log) +
+  autolayer(snaive(fa_log, h = 12), series = "Seasonal", PI = FALSE) +
+  autolayer(fc_fa, series = "SARIMA", PI = FALSE) +
+  ggtitle("Benchmarks vs SARIMA: log(Food Away)")
+```
+
+::: 
+
+---
+
+## 10-Year Treasury Yield (DGS10) 
+
+::: {.panel-tabset}
+
+### ACF & PACF {.active}
+
+```{r}
+dgs_d <- diff(dgs_ts)
+set.seed(123)
+GG1 <- ggAcf(dgs_d) + ggtitle("ACF: Δ 10Y Treasury")
+GG2 <- ggPacf(dgs_d) + ggtitle("PACF: Δ 10Y Treasury")
+GG1; GG2
+```
+
+**Takeaway.** Short memory with lag-1 prominence → **ARIMA(0,1,1)** works well.
+
+### Manual ARMA
+
+
+```{r}
+
+suppressPackageStartupMessages(library(forecast))
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(dplyr))
+
+as_monthly_ts <- function(x) {
+
+  if (inherits(x, "ts")) {
+    x <- stats::na.omit(x)
+    ts(as.numeric(x), start = start(x), frequency = ifelse(frequency(x) > 1, frequency(x), 12))
+  } else {
+    x <- stats::na.omit(as.numeric(x))
+    ts(x, frequency = 12)
+  }
+}
+
+dgs_ts <- as_monthly_ts(dgs_ts)
+ff_ts  <- as_monthly_ts(ff_ts)
+
+stopifnot(frequency(dgs_ts) == 12, frequency(ff_ts) == 12)
+
+safe_arima_fit <- function(x, p, d, q, include_drift = (d == 1)) {
+  fit <- tryCatch(
+    Arima(x, order = c(p, d, q), include.drift = include_drift, method = "ML"),
+    error = function(e) NULL
+  )
+  if (is.null(fit)) {
+    fit <- tryCatch(
+      Arima(x, order = c(p, d, q), include.drift = include_drift, method = "CSS-ML"),
+      error = function(e) NULL
+    )
+  }
+  fit
+}
+
+manual_arima_grid <- function(x, d = 1, pmax = 4, qmax = 4) {
+  rows <- vector("list", (pmax + 1) * (qmax + 1))
+  errs <- vector("list", length(rows))
+  k <- 1
+  for (p in 0:pmax) {
+    for (q in 0:qmax) {
+      fit <- safe_arima_fit(x, p, d, q)
+      if (is.null(fit)) {
+        rows[[k]] <- data.frame(p = p, d = d, q = q,
+                                AIC = NA_real_, BIC = NA_real_, AICc = NA_real_,
+                                status = "failed")
+      } else {
+        rows[[k]] <- data.frame(p = p, d = d, q = q,
+                                AIC = AIC(fit),
+                                BIC = BIC(fit),
+                                AICc = if (!is.null(fit$aicc)) fit$aicc else NA_real_,
+                                status = "ok")
+      }
+      k <- k + 1
+    }
+  }
+  out <- do.call(rbind, rows)
+  out <- out[order(out$BIC), ]
+  rownames(out) <- NULL
+  out
+}
+
+grid_dgs <- manual_arima_grid(dgs_ts, d = 1, pmax = 4, qmax = 4)
+
+kable(head(grid_dgs, 10), digits = 3, caption = "DGS10 — Manual ARIMA(p,1,q) (sorted by BIC)")
+
+```
+
+### Equation
+
+Backshift form:
+
+$$
+(1-L)\,y_t \;=\; 0.0036 \;+\; (1+0.3690\,L)\,\varepsilon_t,
+\qquad y_t=\text{10Y Treasury}.
+$$
+
+Expanded right-hand side:
+
+$$
+(1-L)\,y_t \;=\; 0.0036 \;+\; \big(1+0.3690\,L\big)\,\varepsilon_t.
+$$
+
+*(Here the constant 0.0036 is the drift in the differenced series.)*
+
+```{r}
+# 10Y Treasury, ARIMA(0,1,1)
+astsa::sarima(dgs_ts, 0, 1, 1)
+
+```
+
+### auto.arima()
+
+```{r}
+auto_dgs <- auto.arima(dgs_ts)
+auto_dgs
+```
+
+### Forecast
+
+```{r}
+fit_dgs <- Arima(dgs_ts, order = c(0,1,1))
+fc_dgs  <- forecast(fit_dgs, h = 12)
+autoplot(fc_dgs) + ggtitle("Forecast: 10Y Treasury")
+```
+
+### Benchmark Comparison
+
+```{r}
+autoplot(dgs_ts) +
+  autolayer(meanf(dgs_ts, h = 12), series = "Mean", PI = FALSE) +
+  autolayer(naive(dgs_ts, h = 12), series = "Naive", PI = FALSE) +
+  autolayer(fc_dgs, series = "ARIMA", PI = FALSE) +
+  ggtitle("Benchmarks vs ARIMA: 10Y Treasury")
+```
+
+::: 
+
+---
+
+## Federal Funds Rate 
+
+::: {.panel-tabset}
+
+### ACF & PACF {.active}
+
+```{r}
+ff_d <- diff(ff_ts)
+set.seed(123)
+GG1 <- ggAcf(ff_d) + ggtitle("ACF: Δ Fed Funds")
+GG2 <- ggPacf(ff_d) + ggtitle("PACF: Δ Fed Funds")
+GG1; GG2
+```
+
+**Takeaway.** Persistence at lag-1 → **ARIMA(1,1,0)** is a solid baseline.
+
+### Manual ARMA
+
+```{r}
+
+grid_ff  <- manual_arima_grid(ff_ts,  d = 1, pmax = 4, qmax = 4)
+kable(head(grid_ff,  10), digits = 3, caption = "Fed Funds — Manual ARIMA(p,1,q) (sorted by BIC)")
+
+```
+
+### Equation
+
+Backshift form:
+
+$$
+(1-0.6574\,L)\,(1-L)\,y_t \;=\; 0.0224 \;+\; \varepsilon_t,
+\qquad y_t=\text{Fed Funds}.
+$$
+
+Expanded left-hand operator:
+
+$$
+\big(1 - L - 0.6574\,L + 0.6574\,L^{2}\big)\,y_t \;=\; 0.0224 \;+\; \varepsilon_t.
+$$
+
+```{r}
+# Federal Funds, ARIMA(1,1,3)
+astsa::sarima(ff_ts, 1, 1, 3)
+```
+
+### auto.arima()
+
+```{r}
+auto_ff <- auto.arima(ff_ts)
+auto_ff
+```
+
+### Forecast
+
+```{r}
+fit_ff <- Arima(ff_ts, order = c(1,1,0))
+fc_ff  <- forecast(fit_ff, h = 12)
+autoplot(fc_ff) + ggtitle("Forecast: Federal Funds Rate")
+```
+
+### Benchmark Comparison
+
+```{r}
+autoplot(ff_ts) +
+  autolayer(meanf(ff_ts, h = 12), series = "Mean", PI = FALSE) +
+  autolayer(naive(ff_ts, h = 12), series = "Naive", PI = FALSE) +
+  autolayer(fc_ff, series = "ARIMA", PI = FALSE) +
+  ggtitle("Benchmarks vs ARIMA: Fed Funds")
+```
+
+::: 
