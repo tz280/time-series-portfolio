@@ -2200,6 +2200,132 @@ The VAR(2) model predicts **moderate, fluctuating changes** across staple prices
 
 ---
 
+# Overall Conclusions and Model Comparison
+
+## Research Question Answer
+
+**How does inflation impact American food consumption patterns?**
+
+Inflation impacts food consumption through **three interconnected mechanisms** operating at different timescales:
+
+### Core Findings by Model
+
+**Model 1 (ARIMAX): Direct Price Transmission**
+- **CPI coefficient 0.72**: Every 1-point CPI increase → 0.72-point Food at Home rise
+- **Milk dominates (6.99)**: Largest driver of home food costs
+- **MA(5) structure**: Price shocks persist for 5 months
+- **12-month forecast**: +0.97% Food at Home growth
+- **Best forecast accuracy**: CV RMSE = 26.07
+
+**Model 3 (VAR): Consumer Behavior**
+- **CPI → Food prices** (p < 0.001): Inflation predicts both home and restaurant costs with 1-4 month lag
+- **Food_Home → Food_Away** (p < 0.001): Grocery prices lead restaurant pricing
+- **No strong substitution**: Consumers don't shift between dining categories despite price differentials
+- **12-month forecast**: Food_Home +3.66%, Food_Away +4.84% (restaurant inflation higher)
+
+**Model 4 (VAR): Commodity Dynamics**
+- **Beef as leading indicator** (p = 0.005): Beef Granger-causes other staples - provides 1-2 month warning
+- **Egg shocks are isolated** (p = 0.44): Avian flu doesn't cascade to other foods
+- **Milk impact strongest (2.79)**: $1 milk increase → 2.79-point Food at Home rise
+- **Olive oil unpredictable**: 2024 surge dominates errors (RMSE 328-390)
+- **12-month forecast**: +3.5% Food at Home growth, staples mostly stable
+
+---
+
+## Key Insights
+
+### 1. **Milk is the Leverage Point**
+Both Model 1 (6.99) and Model 4 (2.79) identify milk as having the **largest impact** on Food at Home costs. Policymakers should prioritize milk price stability.
+
+### 2. **Beef Predicts, Eggs Don't**
+- **Beef prices forecast** broader food inflation 1-2 months ahead (Granger p = 0.005)
+- **Egg price spikes are temporary** and don't signal systemic inflation (Granger p = 0.44)
+
+### 3. **Restaurant Inflation Outpaces Groceries**
+Food Away +4.84% vs. Food at Home +3.66% (1.2pp gap) reflects **labor cost pressures** in service sector.
+
+### 4. **No Substitution Effect**
+Consumers **maintain dining patterns** despite restaurant premium - demand is inelastic, not price-sensitive.
+
+### 5. **Effects are Persistent**
+MA(5) and VAR(4) structures indicate shocks last **4-5 months** before dissipating.
+
+### 6. **Forecasts Converge on Moderate Inflation**
+All models predict **1-4% annual food inflation** for 2024-2025, well below 2022-2023 peaks (8-15%).
+
+---
+
+## Practical Implications
+
+### For Policymakers
+1. **Monitor beef prices** as early warning system (1-2 month lead time)
+2. **Stabilize milk prices** for maximum impact on food security (6.99 leverage)
+3. **Egg volatility is noise**, not signal - don't overreact to supply shocks
+4. Policy interventions have **4-5 month lag** before full effect
+
+### For Consumers
+1. **Budget for 3-4% annual food inflation** (Models 3 & 4 forecast)
+2. **Watch milk prices** as earliest indicator of rising costs
+3. **Egg spikes are temporary** - wait them out rather than panic-buy alternatives
+4. **Home cooking saves ~47%** vs. restaurants, but most consumers don't substitute
+
+### For Retailers
+1. **Track beef prices** for 1-2 month commodity cost preview
+2. **Milk promotions have outsized impact** on perceived affordability
+3. **Price changes take 1-4 months** to fully pass through (VAR lag structure)
+4. **Olive oil**: Extreme volatility (2024 spike) - diversify sourcing
+
+---
+
+## Model Selection Guide
+
+| Use Case | Best Model | Rationale |
+|----------|-----------|-----------|
+| **Forecasting Food at Home** | Model 1 (ARIMAX) | Lowest RMSE (26.07), clear coefficients |
+| **Understanding substitution** | Model 3 (VAR) | Captures home vs. away dynamics |
+| **Commodity early warning** | Model 4 (VAR) | Beef Granger-causality, staple interdependencies |
+| **Policy simulation** | Model 3 (VAR) | "What if CPI rises 2%?" scenarios |
+| **Overall best** | Model 1 | Highest accuracy + interpretability |
+
+---
+
+## Limitations
+
+**Data**: Monthly aggregation, national averages hide regional variation, COVID-19 structural break not explicitly modeled
+
+**Models**: 
+- All show residual autocorrelation (missing seasonality)
+- Non-normal residuals (extreme events)
+- Linear assumptions (no threshold effects)
+- Olive oil volatility dominates Model 4 errors
+
+**Omitted variables**: Income, unemployment, exchange rates, energy prices, consumer sentiment
+
+---
+
+## Future Research
+
+**Priority #1**: Test for cointegration → **VECM** to preserve long-run relationships
+
+**Priority #2**: Structural break analysis → Separate pre/post-COVID models
+
+**Priority #3**: **Threshold VAR** to capture nonlinear effects during high inflation
+
+**Optional**: Machine learning (LSTM), regional panel VAR, variance decomposition
+
+---
+
+## Bottom Line
+
+**Inflation impacts food consumption through a multi-month cascade**:
+
+1. **Beef prices rise first** (leading indicator)
+2. **Milk and CPI follow within 1-2 months** (main transmission)
+3. **Food at Home costs adjust over 4-5 months** (MA(5)/VAR(4) persistence)
+4. **Restaurant prices lag groceries by 1-4 months** (menu repricing delays)
+5. **Consumers absorb higher costs** rather than substituting (inelastic demand)
+
+**Key takeaway**: During inflation, **monitor beef and milk prices closely** - they provide the earliest and highest-impact signals. Effects persist for 4-5 months, so budget adjustments should account for medium-term stickiness. The 2024-2025 outlook (1-4% food inflation) suggests **normalization**, not crisis.
 
 ---
 

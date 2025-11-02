@@ -242,6 +242,32 @@ window.Quarto = {
   <ul>
   <li><a href="#model-4-summary" id="toc-model-4-summary" class="nav-link" data-scroll-target="#model-4-summary">Model 4 Summary</a></li>
   </ul></li>
+  <li><a href="#overall-conclusions-and-model-comparison" id="toc-overall-conclusions-and-model-comparison" class="nav-link" data-scroll-target="#overall-conclusions-and-model-comparison">Overall Conclusions and Model Comparison</a>
+  <ul>
+  <li><a href="#research-question-answer" id="toc-research-question-answer" class="nav-link" data-scroll-target="#research-question-answer">Research Question Answer</a>
+  <ul class="collapse">
+  <li><a href="#core-findings-by-model" id="toc-core-findings-by-model" class="nav-link" data-scroll-target="#core-findings-by-model">Core Findings by Model</a></li>
+  </ul></li>
+  <li><a href="#key-insights" id="toc-key-insights" class="nav-link" data-scroll-target="#key-insights">Key Insights</a>
+  <ul class="collapse">
+  <li><a href="#milk-is-the-leverage-point" id="toc-milk-is-the-leverage-point" class="nav-link" data-scroll-target="#milk-is-the-leverage-point">1. <strong>Milk is the Leverage Point</strong></a></li>
+  <li><a href="#beef-predicts-eggs-dont" id="toc-beef-predicts-eggs-dont" class="nav-link" data-scroll-target="#beef-predicts-eggs-dont">2. <strong>Beef Predicts, Eggs Don’t</strong></a></li>
+  <li><a href="#restaurant-inflation-outpaces-groceries" id="toc-restaurant-inflation-outpaces-groceries" class="nav-link" data-scroll-target="#restaurant-inflation-outpaces-groceries">3. <strong>Restaurant Inflation Outpaces Groceries</strong></a></li>
+  <li><a href="#no-substitution-effect" id="toc-no-substitution-effect" class="nav-link" data-scroll-target="#no-substitution-effect">4. <strong>No Substitution Effect</strong></a></li>
+  <li><a href="#effects-are-persistent" id="toc-effects-are-persistent" class="nav-link" data-scroll-target="#effects-are-persistent">5. <strong>Effects are Persistent</strong></a></li>
+  <li><a href="#forecasts-converge-on-moderate-inflation" id="toc-forecasts-converge-on-moderate-inflation" class="nav-link" data-scroll-target="#forecasts-converge-on-moderate-inflation">6. <strong>Forecasts Converge on Moderate Inflation</strong></a></li>
+  </ul></li>
+  <li><a href="#practical-implications" id="toc-practical-implications" class="nav-link" data-scroll-target="#practical-implications">Practical Implications</a>
+  <ul class="collapse">
+  <li><a href="#for-policymakers" id="toc-for-policymakers" class="nav-link" data-scroll-target="#for-policymakers">For Policymakers</a></li>
+  <li><a href="#for-consumers" id="toc-for-consumers" class="nav-link" data-scroll-target="#for-consumers">For Consumers</a></li>
+  <li><a href="#for-retailers" id="toc-for-retailers" class="nav-link" data-scroll-target="#for-retailers">For Retailers</a></li>
+  </ul></li>
+  <li><a href="#model-selection-guide" id="toc-model-selection-guide" class="nav-link" data-scroll-target="#model-selection-guide">Model Selection Guide</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
+  <li><a href="#future-research" id="toc-future-research" class="nav-link" data-scroll-target="#future-research">Future Research</a></li>
+  <li><a href="#bottom-line" id="toc-bottom-line" class="nav-link" data-scroll-target="#bottom-line">Bottom Line</a></li>
+  </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -5128,6 +5154,155 @@ Strongest impact on Food at Home: Milk </code></pre>
 <p><strong>Model Limitations</strong>: Residual autocorrelation suggests missing seasonal patterns; olive oil’s extreme volatility dominates prediction errors; negative beef coefficient counter-intuitive.</p>
 <p><strong>Policy Relevance</strong>: Monitoring beef prices provides 1-2 month early warning of broader food inflation. Milk price stability is key to controlling Food_Home costs given its 2.79 impact coefficient. Egg supply shocks (avian flu) are idiosyncratic and don’t signal systemic inflation.</p>
 <hr>
+</section>
+</section>
+<section id="overall-conclusions-and-model-comparison" class="level1">
+<h1>Overall Conclusions and Model Comparison</h1>
+<section id="research-question-answer" class="level2">
+<h2 class="anchored" data-anchor-id="research-question-answer">Research Question Answer</h2>
+<p><strong>How does inflation impact American food consumption patterns?</strong></p>
+<p>Inflation impacts food consumption through <strong>three interconnected mechanisms</strong> operating at different timescales:</p>
+<section id="core-findings-by-model" class="level3">
+<h3 class="anchored" data-anchor-id="core-findings-by-model">Core Findings by Model</h3>
+<p><strong>Model 1 (ARIMAX): Direct Price Transmission</strong> - <strong>CPI coefficient 0.72</strong>: Every 1-point CPI increase → 0.72-point Food at Home rise - <strong>Milk dominates (6.99)</strong>: Largest driver of home food costs - <strong>MA(5) structure</strong>: Price shocks persist for 5 months - <strong>12-month forecast</strong>: +0.97% Food at Home growth - <strong>Best forecast accuracy</strong>: CV RMSE = 26.07</p>
+<p><strong>Model 3 (VAR): Consumer Behavior</strong> - <strong>CPI → Food prices</strong> (p &lt; 0.001): Inflation predicts both home and restaurant costs with 1-4 month lag - <strong>Food_Home → Food_Away</strong> (p &lt; 0.001): Grocery prices lead restaurant pricing - <strong>No strong substitution</strong>: Consumers don’t shift between dining categories despite price differentials - <strong>12-month forecast</strong>: Food_Home +3.66%, Food_Away +4.84% (restaurant inflation higher)</p>
+<p><strong>Model 4 (VAR): Commodity Dynamics</strong> - <strong>Beef as leading indicator</strong> (p = 0.005): Beef Granger-causes other staples - provides 1-2 month warning - <strong>Egg shocks are isolated</strong> (p = 0.44): Avian flu doesn’t cascade to other foods - <strong>Milk impact strongest (2.79)</strong>: $1 milk increase → 2.79-point Food at Home rise - <strong>Olive oil unpredictable</strong>: 2024 surge dominates errors (RMSE 328-390) - <strong>12-month forecast</strong>: +3.5% Food at Home growth, staples mostly stable</p>
+<hr>
+</section>
+</section>
+<section id="key-insights" class="level2">
+<h2 class="anchored" data-anchor-id="key-insights">Key Insights</h2>
+<section id="milk-is-the-leverage-point" class="level3">
+<h3 class="anchored" data-anchor-id="milk-is-the-leverage-point">1. <strong>Milk is the Leverage Point</strong></h3>
+<p>Both Model 1 (6.99) and Model 4 (2.79) identify milk as having the <strong>largest impact</strong> on Food at Home costs. Policymakers should prioritize milk price stability.</p>
+</section>
+<section id="beef-predicts-eggs-dont" class="level3">
+<h3 class="anchored" data-anchor-id="beef-predicts-eggs-dont">2. <strong>Beef Predicts, Eggs Don’t</strong></h3>
+<ul>
+<li><strong>Beef prices forecast</strong> broader food inflation 1-2 months ahead (Granger p = 0.005)</li>
+<li><strong>Egg price spikes are temporary</strong> and don’t signal systemic inflation (Granger p = 0.44)</li>
+</ul>
+</section>
+<section id="restaurant-inflation-outpaces-groceries" class="level3">
+<h3 class="anchored" data-anchor-id="restaurant-inflation-outpaces-groceries">3. <strong>Restaurant Inflation Outpaces Groceries</strong></h3>
+<p>Food Away +4.84% vs.&nbsp;Food at Home +3.66% (1.2pp gap) reflects <strong>labor cost pressures</strong> in service sector.</p>
+</section>
+<section id="no-substitution-effect" class="level3">
+<h3 class="anchored" data-anchor-id="no-substitution-effect">4. <strong>No Substitution Effect</strong></h3>
+<p>Consumers <strong>maintain dining patterns</strong> despite restaurant premium - demand is inelastic, not price-sensitive.</p>
+</section>
+<section id="effects-are-persistent" class="level3">
+<h3 class="anchored" data-anchor-id="effects-are-persistent">5. <strong>Effects are Persistent</strong></h3>
+<p>MA(5) and VAR(4) structures indicate shocks last <strong>4-5 months</strong> before dissipating.</p>
+</section>
+<section id="forecasts-converge-on-moderate-inflation" class="level3">
+<h3 class="anchored" data-anchor-id="forecasts-converge-on-moderate-inflation">6. <strong>Forecasts Converge on Moderate Inflation</strong></h3>
+<p>All models predict <strong>1-4% annual food inflation</strong> for 2024-2025, well below 2022-2023 peaks (8-15%).</p>
+<hr>
+</section>
+</section>
+<section id="practical-implications" class="level2">
+<h2 class="anchored" data-anchor-id="practical-implications">Practical Implications</h2>
+<section id="for-policymakers" class="level3">
+<h3 class="anchored" data-anchor-id="for-policymakers">For Policymakers</h3>
+<ol type="1">
+<li><strong>Monitor beef prices</strong> as early warning system (1-2 month lead time)</li>
+<li><strong>Stabilize milk prices</strong> for maximum impact on food security (6.99 leverage)</li>
+<li><strong>Egg volatility is noise</strong>, not signal - don’t overreact to supply shocks</li>
+<li>Policy interventions have <strong>4-5 month lag</strong> before full effect</li>
+</ol>
+</section>
+<section id="for-consumers" class="level3">
+<h3 class="anchored" data-anchor-id="for-consumers">For Consumers</h3>
+<ol type="1">
+<li><strong>Budget for 3-4% annual food inflation</strong> (Models 3 &amp; 4 forecast)</li>
+<li><strong>Watch milk prices</strong> as earliest indicator of rising costs</li>
+<li><strong>Egg spikes are temporary</strong> - wait them out rather than panic-buy alternatives</li>
+<li><strong>Home cooking saves ~47%</strong> vs.&nbsp;restaurants, but most consumers don’t substitute</li>
+</ol>
+</section>
+<section id="for-retailers" class="level3">
+<h3 class="anchored" data-anchor-id="for-retailers">For Retailers</h3>
+<ol type="1">
+<li><strong>Track beef prices</strong> for 1-2 month commodity cost preview</li>
+<li><strong>Milk promotions have outsized impact</strong> on perceived affordability</li>
+<li><strong>Price changes take 1-4 months</strong> to fully pass through (VAR lag structure)</li>
+<li><strong>Olive oil</strong>: Extreme volatility (2024 spike) - diversify sourcing</li>
+</ol>
+<hr>
+</section>
+</section>
+<section id="model-selection-guide" class="level2">
+<h2 class="anchored" data-anchor-id="model-selection-guide">Model Selection Guide</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 31%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Use Case</th>
+<th>Best Model</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Forecasting Food at Home</strong></td>
+<td>Model 1 (ARIMAX)</td>
+<td>Lowest RMSE (26.07), clear coefficients</td>
+</tr>
+<tr class="even">
+<td><strong>Understanding substitution</strong></td>
+<td>Model 3 (VAR)</td>
+<td>Captures home vs.&nbsp;away dynamics</td>
+</tr>
+<tr class="odd">
+<td><strong>Commodity early warning</strong></td>
+<td>Model 4 (VAR)</td>
+<td>Beef Granger-causality, staple interdependencies</td>
+</tr>
+<tr class="even">
+<td><strong>Policy simulation</strong></td>
+<td>Model 3 (VAR)</td>
+<td>“What if CPI rises 2%?” scenarios</td>
+</tr>
+<tr class="odd">
+<td><strong>Overall best</strong></td>
+<td>Model 1</td>
+<td>Highest accuracy + interpretability</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
+<p><strong>Data</strong>: Monthly aggregation, national averages hide regional variation, COVID-19 structural break not explicitly modeled</p>
+<p><strong>Models</strong>: - All show residual autocorrelation (missing seasonality) - Non-normal residuals (extreme events) - Linear assumptions (no threshold effects) - Olive oil volatility dominates Model 4 errors</p>
+<p><strong>Omitted variables</strong>: Income, unemployment, exchange rates, energy prices, consumer sentiment</p>
+<hr>
+</section>
+<section id="future-research" class="level2">
+<h2 class="anchored" data-anchor-id="future-research">Future Research</h2>
+<p><strong>Priority #1</strong>: Test for cointegration → <strong>VECM</strong> to preserve long-run relationships</p>
+<p><strong>Priority #2</strong>: Structural break analysis → Separate pre/post-COVID models</p>
+<p><strong>Priority #3</strong>: <strong>Threshold VAR</strong> to capture nonlinear effects during high inflation</p>
+<p><strong>Optional</strong>: Machine learning (LSTM), regional panel VAR, variance decomposition</p>
+<hr>
+</section>
+<section id="bottom-line" class="level2">
+<h2 class="anchored" data-anchor-id="bottom-line">Bottom Line</h2>
+<p><strong>Inflation impacts food consumption through a multi-month cascade</strong>:</p>
+<ol type="1">
+<li><strong>Beef prices rise first</strong> (leading indicator)</li>
+<li><strong>Milk and CPI follow within 1-2 months</strong> (main transmission)</li>
+<li><strong>Food at Home costs adjust over 4-5 months</strong> (MA(5)/VAR(4) persistence)</li>
+<li><strong>Restaurant prices lag groceries by 1-4 months</strong> (menu repricing delays)</li>
+<li><strong>Consumers absorb higher costs</strong> rather than substituting (inelastic demand)</li>
+</ol>
+<p><strong>Key takeaway</strong>: During inflation, <strong>monitor beef and milk prices closely</strong> - they provide the earliest and highest-impact signals. Effects persist for 4-5 months, so budget adjustments should account for medium-term stickiness. The 2024-2025 outlook (1-4% food inflation) suggests <strong>normalization</strong>, not crisis.</p>
 <hr>
 </section>
 </section>
