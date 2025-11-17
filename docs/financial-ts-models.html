@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>financial-ts-models – Time Series Analysis</title>
+<title>Financial Time Series Models (iShares TIPS Bond ETF) – Time Series Analysis</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -68,7 +103,38 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -151,17 +217,1560 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#sec-introduction" id="toc-sec-introduction" class="nav-link active" data-scroll-target="#sec-introduction">Introduction</a>
+  <ul>
+  <li><a href="#why-tips-treasury-inflation-protected-securities" id="toc-why-tips-treasury-inflation-protected-securities" class="nav-link" data-scroll-target="#why-tips-treasury-inflation-protected-securities">Why TIPS (Treasury Inflation-Protected Securities)?</a></li>
+  <li><a href="#research-question" id="toc-research-question" class="nav-link" data-scroll-target="#research-question">Research Question</a></li>
+  <li><a href="#what-is-volatility" id="toc-what-is-volatility" class="nav-link" data-scroll-target="#what-is-volatility">What is Volatility?</a></li>
+  </ul></li>
+  <li><a href="#sec-data" id="toc-sec-data" class="nav-link" data-scroll-target="#sec-data">Data and Methodology</a>
+  <ul>
+  <li><a href="#data-source" id="toc-data-source" class="nav-link" data-scroll-target="#data-source">Data Source</a></li>
+  <li><a href="#descriptive-statistics" id="toc-descriptive-statistics" class="nav-link" data-scroll-target="#descriptive-statistics">Descriptive Statistics</a></li>
+  </ul></li>
+  <li><a href="#sec-eda" id="toc-sec-eda" class="nav-link" data-scroll-target="#sec-eda">Exploratory Data Analysis</a>
+  <ul>
+  <li><a href="#time-series-visualization" id="toc-time-series-visualization" class="nav-link" data-scroll-target="#time-series-visualization">Time Series Visualization</a></li>
+  </ul></li>
+  <li><a href="#sec-stationarity" id="toc-sec-stationarity" class="nav-link" data-scroll-target="#sec-stationarity">Stationarity Tests</a></li>
+  <li><a href="#sec-arch-tests" id="toc-sec-arch-tests" class="nav-link" data-scroll-target="#sec-arch-tests">Testing for ARCH Effects</a></li>
+  <li><a href="#sec-model-estimation" id="toc-sec-model-estimation" class="nav-link" data-scroll-target="#sec-model-estimation">Model Specification and Estimation</a>
+  <ul>
+  <li><a href="#step-1-mean-equation-arma-selection" id="toc-step-1-mean-equation-arma-selection" class="nav-link" data-scroll-target="#step-1-mean-equation-arma-selection">Step 1: Mean Equation (ARMA) Selection</a></li>
+  <li><a href="#step-2-garch-variance-equation-estimation" id="toc-step-2-garch-variance-equation-estimation" class="nav-link" data-scroll-target="#step-2-garch-variance-equation-estimation">Step 2: GARCH Variance Equation Estimation</a></li>
+  </ul></li>
+  <li><a href="#sec-diagnostics" id="toc-sec-diagnostics" class="nav-link" data-scroll-target="#sec-diagnostics">Model Diagnostics</a></li>
+  <li><a href="#sec-final-model" id="toc-sec-final-model" class="nav-link" data-scroll-target="#sec-final-model">Final Model: Equation and Coefficients</a>
+  <ul>
+  <li><a href="#model-specification" id="toc-model-specification" class="nav-link" data-scroll-target="#model-specification">Model Specification</a></li>
+  <li><a href="#mathematical-representation" id="toc-mathematical-representation" class="nav-link" data-scroll-target="#mathematical-representation">Mathematical Representation</a></li>
+  <li><a href="#substituting-estimated-coefficients" id="toc-substituting-estimated-coefficients" class="nav-link" data-scroll-target="#substituting-estimated-coefficients">Substituting Estimated Coefficients</a></li>
+  <li><a href="#persistence-analysis" id="toc-persistence-analysis" class="nav-link" data-scroll-target="#persistence-analysis">Persistence Analysis</a></li>
+  </ul></li>
+  <li><a href="#sec-implications" id="toc-sec-implications" class="nav-link" data-scroll-target="#sec-implications">Economic Implications</a>
+  <ul>
+  <li><a href="#connecting-to-household-impact" id="toc-connecting-to-household-impact" class="nav-link" data-scroll-target="#connecting-to-household-impact">Connecting to Household Impact</a>
+  <ul class="collapse">
+  <li><a href="#portfolio-volatility-during-inflationary-periods" id="toc-portfolio-volatility-during-inflationary-periods" class="nav-link" data-scroll-target="#portfolio-volatility-during-inflationary-periods">1. <strong>Portfolio Volatility During Inflationary Periods</strong></a></li>
+  <li><a href="#persistence-of-uncertainty" id="toc-persistence-of-uncertainty" class="nav-link" data-scroll-target="#persistence-of-uncertainty">2. <strong>Persistence of Uncertainty</strong></a></li>
+  <li><a href="#comparison-to-food-inflation-analysis" id="toc-comparison-to-food-inflation-analysis" class="nav-link" data-scroll-target="#comparison-to-food-inflation-analysis">3. <strong>Comparison to Food Inflation Analysis</strong></a></li>
+  <li><a href="#policy-implications" id="toc-policy-implications" class="nav-link" data-scroll-target="#policy-implications">4. <strong>Policy Implications</strong></a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#sec-conclusion" id="toc-sec-conclusion" class="nav-link" data-scroll-target="#sec-conclusion">Conclusion</a>
+  <ul>
+  <li><a href="#summary-of-findings" id="toc-summary-of-findings" class="nav-link" data-scroll-target="#summary-of-findings">Summary of Findings</a></li>
+  <li><a href="#integration-with-overall-inflation-analysis" id="toc-integration-with-overall-inflation-analysis" class="nav-link" data-scroll-target="#integration-with-overall-inflation-analysis">Integration with Overall Inflation Analysis</a></li>
+  <li><a href="#final-thoughts" id="toc-final-thoughts" class="nav-link" data-scroll-target="#final-thoughts">Final Thoughts</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Financial Time Series Models (iShares TIPS Bond ETF)</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
 
 
+</header>
 
+
+<section id="sec-introduction" class="level2">
+<h2 class="anchored" data-anchor-id="sec-introduction">Introduction</h2>
+<p>Inflation doesn’t only affect household spending—it also creates <strong>financial market volatility</strong> that impacts Americans through their investment portfolios, retirement accounts (401k, IRA), and overall economic confidence.</p>
+<section id="why-tips-treasury-inflation-protected-securities" class="level3">
+<h3 class="anchored" data-anchor-id="why-tips-treasury-inflation-protected-securities">Why TIPS (Treasury Inflation-Protected Securities)?</h3>
+<p>This section extends the inflation analysis to financial markets by examining the <strong>TIP ETF</strong> (iShares TIPS Bond ETF), which tracks Treasury Inflation-Protected Securities. TIPS are specifically designed to protect investors against inflation:</p>
+<ul>
+<li><strong>Principal adjusts with CPI</strong>: When CPI rises, TIPS principal increases</li>
+<li><strong>Direct link to inflation</strong>: TIPS yields reflect market expectations of future inflation</li>
+<li><strong>Portfolio hedge</strong>: Many American households hold TIPS in retirement accounts</li>
+</ul>
+</section>
+<section id="research-question" class="level3">
+<h3 class="anchored" data-anchor-id="research-question">Research Question</h3>
+<p><strong>How does inflation uncertainty manifest as financial market volatility, and what are the implications for household wealth?</strong></p>
+<p>To answer this, we employ <strong>ARCH/GARCH models</strong> to:</p>
+<ol type="1">
+<li>Quantify the time-varying volatility of TIPS returns</li>
+<li>Measure the <strong>persistence of volatility shocks</strong> (how long does inflation uncertainty last?)</li>
+<li>Assess whether the TIPS market exhibits <strong>volatility clustering</strong> during inflationary periods</li>
+<li>Connect financial market volatility to household economic anxiety</li>
+</ol>
+</section>
+<section id="what-is-volatility" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-volatility">What is Volatility?</h3>
+<p><strong>Volatility</strong> measures the dispersion of returns—essentially, how much an asset’s price fluctuates. High volatility means:</p>
+<ul>
+<li>❌ <strong>Larger unexpected price swings</strong> (both up and down)</li>
+<li>❌ <strong>Greater investment risk</strong> and portfolio instability</li>
+<li>❌ <strong>Heightened economic uncertainty</strong> and reduced confidence</li>
+<li>❌ <strong>More difficult retirement planning</strong> (401k balances fluctuate wildly)</li>
+</ul>
+<p>In GARCH models, volatility is <strong>time-varying and persistent</strong>:</p>
+<ul>
+<li><strong>Volatility clustering</strong>: High volatility periods follow high volatility periods (calm follows calm)</li>
+<li><strong>Shock persistence</strong>: A spike in inflation uncertainty today affects volatility for weeks/months</li>
+<li><strong>Predictability</strong>: Past volatility helps predict future volatility</li>
+</ul>
+<p>This is particularly relevant during inflationary episodes (like 2022) when CPI surged to 9%, causing both rising prices AND heightened financial market uncertainty.</p>
+<hr>
+</section>
+</section>
+<section id="sec-data" class="level2">
+<h2 class="anchored" data-anchor-id="sec-data">Data and Methodology</h2>
+<section id="data-source" class="level3">
+<h3 class="anchored" data-anchor-id="data-source">Data Source</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Load Required Packages</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load libraries</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(quantmod)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tseries)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(forecast)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rugarch)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(FinTS)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(moments)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Download TIP Data from Yahoo Finance</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Download TIP (iShares TIPS Bond ETF) daily data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">getSymbols</span>(<span class="st">"TIP"</span>, <span class="at">from =</span> <span class="st">"2010-01-01"</span>, <span class="at">to =</span> <span class="fu">Sys.Date</span>(), <span class="at">src =</span> <span class="st">"yahoo"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "TIP"</code></pre>
+</div>
+<details class="code-fold">
+<summary>Download TIP Data from Yahoo Finance</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract adjusted closing prices</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>tip_prices <span class="ot">&lt;-</span> <span class="fu">Ad</span>(TIP)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate log returns (in percentage)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>tip_returns <span class="ot">&lt;-</span> <span class="fu">diff</span>(<span class="fu">log</span>(tip_prices)) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove NA values</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>tip_returns <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(tip_returns)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to numeric vector</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>tip_returns_vec <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(tip_returns)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p><strong>Data Description:</strong></p>
+<ul>
+<li><strong>Asset</strong>: TIP (iShares TIPS Bond ETF, Ticker: TIP)</li>
+<li><strong>Time Period</strong>: January 1, 2010 to November 16, 2025</li>
+<li><strong>Frequency</strong>: Daily</li>
+<li><strong>Variable</strong>: Log returns, calculated as <span class="math inline">\(r_t = \ln(P_t / P_{t-1}) \times 100\)</span></li>
+<li><strong>Total Observations</strong>: 3992 daily returns</li>
+</ul>
+<p><strong>Why Log Returns?</strong></p>
+<p>Log returns are preferred in financial econometrics because they are:</p>
+<ul>
+<li><strong>Time-additive</strong>: Multi-period returns = sum of single-period returns</li>
+<li><strong>More symmetric</strong>: <span class="math inline">\(\ln(P_t/P_{t-1}) \approx -\ln(P_{t-1}/P_t)\)</span></li>
+<li><strong>Approximately normal</strong> for small changes</li>
+<li><strong>Standard in ARCH/GARCH literature</strong></li>
+</ul>
+</section>
+<section id="descriptive-statistics" class="level3">
+<h3 class="anchored" data-anchor-id="descriptive-statistics">Descriptive Statistics</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Calculate Summary Statistics</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate statistics</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>stats <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Statistic =</span> <span class="fu">c</span>(<span class="st">"Number of Observations"</span>, </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Mean Return (%)"</span>, </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Standard Deviation (%)"</span>, </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Minimum Return (%)"</span>, </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Maximum Return (%)"</span>, </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Skewness"</span>, </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Excess Kurtosis"</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Range (%)"</span>),</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">Value =</span> <span class="fu">c</span>(</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">length</span>(tip_returns_vec),</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">round</span>(<span class="fu">mean</span>(tip_returns_vec), <span class="dv">4</span>),</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">round</span>(<span class="fu">sd</span>(tip_returns_vec), <span class="dv">4</span>),</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">round</span>(<span class="fu">min</span>(tip_returns_vec), <span class="dv">4</span>),</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">round</span>(<span class="fu">max</span>(tip_returns_vec), <span class="dv">4</span>),</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">round</span>(<span class="fu">skewness</span>(tip_returns_vec), <span class="dv">4</span>),</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">round</span>(<span class="fu">kurtosis</span>(tip_returns_vec) <span class="sc">-</span> <span class="dv">3</span>, <span class="dv">4</span>),  <span class="co"># Excess kurtosis</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">round</span>(<span class="fu">max</span>(tip_returns_vec) <span class="sc">-</span> <span class="fu">min</span>(tip_returns_vec), <span class="dv">4</span>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">Interpretation =</span> <span class="fu">c</span>(</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Sample size adequate for time series modeling"</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Near-zero mean typical for financial returns"</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Daily volatility measure"</span>,</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Largest single-day loss"</span>,</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Largest single-day gain"</span>,</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Near-zero indicates symmetric distribution"</span>,</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Excess kurtosis &gt; 0 indicates fat tails (leptokurtic)"</span>,</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Total spread of returns"</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Display table with kableExtra</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(stats, </span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="st">"**Table 1: Descriptive Statistics of TIP Daily Returns**"</span>,</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">align =</span> <span class="fu">c</span>(<span class="st">'l'</span>, <span class="st">'r'</span>, <span class="st">'l'</span>),</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Statistic"</span>, <span class="st">"Value"</span>, <span class="st">"Interpretation"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>, <span class="st">"condensed"</span>),</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>                <span class="at">position =</span> <span class="st">"left"</span>,</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>                <span class="at">font_size =</span> <span class="dv">14</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">0</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>, <span class="at">background =</span> <span class="st">"#f0f0f0"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">7</span>, <span class="at">background =</span> <span class="st">"#ffffcc"</span>)  <span class="co"># Highlight kurtosis row</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover table-condensed caption-top table-sm small">
+<caption>**Table 1: Descriptive Statistics of TIP Daily Returns**</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Statistic</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Value</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Number of Observations</td>
+<td style="text-align: right;">3992.0000</td>
+<td style="text-align: left;">Sample size adequate for time series modeling</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mean Return (%)</td>
+<td style="text-align: right;">0.0116</td>
+<td style="text-align: left;">Near-zero mean typical for financial returns</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Standard Deviation (%)</td>
+<td style="text-align: right;">0.3614</td>
+<td style="text-align: left;">Daily volatility measure</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Minimum Return (%)</td>
+<td style="text-align: right;">-2.9080</td>
+<td style="text-align: left;">Largest single-day loss</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Maximum Return (%)</td>
+<td style="text-align: right;">4.3573</td>
+<td style="text-align: left;">Largest single-day gain</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Skewness</td>
+<td style="text-align: right;">0.0929</td>
+<td style="text-align: left;">Near-zero indicates symmetric distribution</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; background-color: rgba(255, 255, 204, 255) !important;">Excess Kurtosis</td>
+<td style="text-align: right; background-color: rgba(255, 255, 204, 255) !important;">10.0894</td>
+<td style="text-align: left; background-color: rgba(255, 255, 204, 255) !important;">Excess kurtosis &gt; 0 indicates fat tails (leptokurtic)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Range (%)</td>
+<td style="text-align: right;">7.2654</td>
+<td style="text-align: left;">Total spread of returns</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Key Observations
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Excess Kurtosis = 10.09</strong> (much greater than 0)</p>
+<p>This indicates <strong>fat tails (leptokurtic distribution)</strong>: extreme returns occur more frequently than a normal distribution would predict. This is a hallmark of financial data and strongly justifies GARCH modeling.</p>
+<p><strong>Comparison to Normal Distribution:</strong></p>
+<ul>
+<li>Normal distribution: Kurtosis = 3 (Excess = 0)</li>
+<li>TIP returns: Kurtosis = 13.09 (Excess = 10.09)</li>
+</ul>
+<p>The high excess kurtosis suggests that large volatility shocks (like March 2020 COVID crash or 2022 inflation surge) are more common than a simple random walk model would predict.</p>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="sec-eda" class="level2">
+<h2 class="anchored" data-anchor-id="sec-eda">Exploratory Data Analysis</h2>
+<section id="time-series-visualization" class="level3">
+<h3 class="anchored" data-anchor-id="time-series-visualization">Time Series Visualization</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Show Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a multi-panel plot</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">2</span>))</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Panel 1: Returns</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">index</span>(tip_returns), <span class="fu">coredata</span>(tip_returns), </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">type =</span> <span class="st">'l'</span>, <span class="at">col =</span> <span class="st">'steelblue'</span>, <span class="at">lwd =</span> <span class="fl">0.8</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"TIP Daily Log Returns (2010-Present)"</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Date"</span>, <span class="at">ylab =</span> <span class="st">"Returns (%)"</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>     <span class="at">cex.main =</span> <span class="fl">1.3</span>, <span class="at">cex.lab =</span> <span class="fl">1.1</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Highlight volatility events</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">as.Date</span>(<span class="st">"2020-03-15"</span>), <span class="at">col =</span> <span class="st">"orange"</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>)  <span class="co"># COVID</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">as.Date</span>(<span class="st">"2022-06-01"</span>), <span class="at">col =</span> <span class="st">"purple"</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>)  <span class="co"># Inflation peak</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, </span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"Returns"</span>, <span class="st">"Zero Line"</span>, <span class="st">"COVID-19 Crash"</span>, <span class="st">"2022 Inflation Peak"</span>),</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"red"</span>, <span class="st">"orange"</span>, <span class="st">"purple"</span>),</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>       <span class="at">lty =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>), <span class="at">lwd =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">1.5</span>, <span class="fl">1.5</span>, <span class="fl">1.5</span>),</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">cex =</span> <span class="fl">0.8</span>)</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="fu">grid</span>()</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Panel 2: Squared returns</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">index</span>(tip_returns), <span class="fu">coredata</span>(tip_returns)<span class="sc">^</span><span class="dv">2</span>, </span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>     <span class="at">type =</span> <span class="st">'l'</span>, <span class="at">col =</span> <span class="st">'darkred'</span>, <span class="at">lwd =</span> <span class="fl">0.8</span>,</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Squared Returns (Volatility Proxy)"</span>,</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Date"</span>, <span class="at">ylab =</span> <span class="st">"Squared Returns"</span>,</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>     <span class="at">cex.main =</span> <span class="fl">1.3</span>, <span class="at">cex.lab =</span> <span class="fl">1.1</span>)</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">as.Date</span>(<span class="st">"2020-03-15"</span>), <span class="at">col =</span> <span class="st">"orange"</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>)</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">as.Date</span>(<span class="st">"2022-06-01"</span>), <span class="at">col =</span> <span class="st">"purple"</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>)</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="fu">grid</span>()</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Panel 3: Histogram</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(tip_returns_vec, <span class="at">breaks =</span> <span class="dv">60</span>, <span class="at">freq =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> <span class="st">'lightblue'</span>, <span class="at">border =</span> <span class="st">'white'</span>,</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Distribution of TIP Returns vs. Normal Distribution"</span>,</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Returns (%)"</span>, <span class="at">ylab =</span> <span class="st">"Density"</span>,</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>     <span class="at">cex.main =</span> <span class="fl">1.3</span>, <span class="at">cex.lab =</span> <span class="fl">1.1</span>)</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(<span class="fu">density</span>(tip_returns_vec), <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">lwd =</span> <span class="fl">2.5</span>)</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, <span class="at">mean =</span> <span class="fu">mean</span>(tip_returns_vec), <span class="at">sd =</span> <span class="fu">sd</span>(tip_returns_vec)), </span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>      <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">col =</span> <span class="st">"blue"</span>, <span class="at">lwd =</span> <span class="fl">2.5</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, </span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"Actual Density"</span>, <span class="st">"Normal Density"</span>), </span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"red"</span>, <span class="st">"blue"</span>), <span class="at">lty =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">lwd =</span> <span class="fl">2.5</span>,</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>       <span class="at">cex =</span> <span class="fl">0.9</span>, <span class="at">bg =</span> <span class="st">"white"</span>)</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-timeseries" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-timeseries-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="financial-ts-models_files/figure-html/fig-timeseries-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-timeseries-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: TIP returns exhibit volatility clustering, particularly visible in 2020 (COVID-19) and 2022 (inflation spike). Squared returns reveal periods where volatility persists.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Visual Evidence of Volatility Clustering
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Top Panel (Returns):</strong></p>
+<ul>
+<li>Returns fluctuate around zero (red dashed line)</li>
+<li><strong>Volatility clustering is evident</strong>: periods of large swings cluster together</li>
+<li><strong>March 2020 (orange line)</strong>: COVID-19 crash—extreme volatility spike</li>
+<li><strong>June 2022 (purple line)</strong>: CPI peaked at 9.1%—sustained high volatility</li>
+</ul>
+<p><strong>Middle Panel (Squared Returns as Volatility Proxy):</strong></p>
+<ul>
+<li>Massive spike in March 2020 (squared return &gt; 15)</li>
+<li>Elevated volatility throughout 2022 (inflation uncertainty period)</li>
+<li>Calm periods (2010-2019) have near-zero squared returns</li>
+<li><strong>Implication</strong>: Volatility is NOT constant—it varies over time</li>
+</ul>
+<p><strong>Bottom Panel (Distribution):</strong></p>
+<ul>
+<li>Red line (actual) is <strong>more peaked</strong> than blue dashed line (normal)</li>
+<li>Fat tails on both sides—extreme returns more common than normal distribution predicts</li>
+<li>This non-normality justifies GARCH modeling with possible Student-t distribution</li>
+</ul>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="sec-stationarity" class="level2">
+<h2 class="anchored" data-anchor-id="sec-stationarity">Stationarity Tests</h2>
+<p>GARCH models require that the input data (returns) are <strong>stationary</strong>—i.e., statistical properties (mean, variance) don’t change over time. We test this formally.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Augmented Dickey-Fuller and KPSS Tests</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ADF Test</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>adf_test <span class="ot">&lt;-</span> <span class="fu">adf.test</span>(tip_returns_vec)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># KPSS Test</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>kpss_test <span class="ot">&lt;-</span> <span class="fu">kpss.test</span>(tip_returns_vec, <span class="at">null =</span> <span class="st">"Level"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create results table</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>stationarity_results <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Test =</span> <span class="fu">c</span>(<span class="st">"Augmented Dickey-Fuller (ADF)"</span>, <span class="st">"KPSS"</span>),</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">Null_Hypothesis =</span> <span class="fu">c</span>(<span class="st">"Series has unit root (non-stationary)"</span>, </span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Series is stationary"</span>),</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">Test_Statistic =</span> <span class="fu">c</span>(<span class="fu">round</span>(adf_test<span class="sc">$</span>statistic, <span class="dv">4</span>), </span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">round</span>(kpss_test<span class="sc">$</span>statistic, <span class="dv">4</span>)),</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">P_Value =</span> <span class="fu">c</span>(<span class="fu">format.pval</span>(adf_test<span class="sc">$</span>p.value, <span class="at">digits =</span> <span class="dv">4</span>),</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>              <span class="fu">format.pval</span>(kpss_test<span class="sc">$</span>p.value, <span class="at">digits =</span> <span class="dv">4</span>)),</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">Decision =</span> <span class="fu">c</span>(</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(adf_test<span class="sc">$</span>p.value <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="st">"Reject H0 (Stationary)"</span>, <span class="st">"Fail to reject H0"</span>),</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(kpss_test<span class="sc">$</span>p.value <span class="sc">&gt;</span> <span class="fl">0.05</span>, <span class="st">"Fail to reject H0 (Stationary)"</span>, <span class="st">"Reject H0"</span>)</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(stationarity_results,</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="st">"**Table 2: Stationarity Test Results**"</span>,</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Test"</span>, <span class="st">"H₀"</span>, <span class="st">"Test Statistic"</span>, <span class="st">"p-value"</span>, <span class="st">"Decision"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>),</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>                <span class="at">position =</span> <span class="st">"left"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">0</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>, <span class="at">background =</span> <span class="st">"#f0f0f0"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small">
+<caption>**Table 2: Stationarity Test Results**</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;"></th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Test</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">H₀</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Test Statistic</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">p-value</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Dickey-Fuller</td>
+<td style="text-align: left;">Augmented Dickey-Fuller (ADF)</td>
+<td style="text-align: left;">Series has unit root (non-stationary)</td>
+<td style="text-align: right;">-16.3449</td>
+<td style="text-align: left;">0.01</td>
+<td style="text-align: left;">Reject H0 (Stationary)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KPSS Level</td>
+<td style="text-align: left;">KPSS</td>
+<td style="text-align: left;">Series is stationary</td>
+<td style="text-align: right;">0.0981</td>
+<td style="text-align: left;">0.1</td>
+<td style="text-align: left;">Fail to reject H0 (Stationary)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Interpretation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Both tests <strong>confirm stationarity</strong> of TIP returns:</p>
+<ul>
+<li><strong>ADF Test</strong>: p &lt; 0.05 → Reject null hypothesis of unit root → Returns are stationary ✓</li>
+<li><strong>KPSS Test</strong>: p &gt; 0.05 → Fail to reject null hypothesis of stationarity → Returns are stationary ✓</li>
+</ul>
+<p><strong>Why This Matters:</strong></p>
+<p>Stationarity is a <strong>prerequisite for ARMA/GARCH modeling</strong>. Non-stationary data can lead to spurious results. Financial returns (price changes) are typically stationary, while price levels are not. This is why we work with returns rather than prices.</p>
+<p><strong>Economic Interpretation:</strong></p>
+<p>Stationary returns imply no long-term trend—TIP returns fluctuate around a constant mean (near zero) with time-varying volatility. This is consistent with efficient market theory: expected returns don’t grow without bound.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-arch-tests" class="level2">
+<h2 class="anchored" data-anchor-id="sec-arch-tests">Testing for ARCH Effects</h2>
+<p>Before fitting a GARCH model, we must confirm that <strong>volatility clustering (ARCH effects)</strong> exists. If volatility is constant, a simple ARMA model suffices.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Ljung-Box and ARCH-LM Tests</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test 1: Ljung-Box on Returns (serial correlation)</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>lb_returns <span class="ot">&lt;-</span> <span class="fu">Box.test</span>(tip_returns_vec, <span class="at">lag =</span> <span class="dv">10</span>, <span class="at">type =</span> <span class="st">"Ljung-Box"</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Test 2: Ljung-Box on Squared Returns (ARCH effects)</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>lb_squared <span class="ot">&lt;-</span> <span class="fu">Box.test</span>(tip_returns_vec<span class="sc">^</span><span class="dv">2</span>, <span class="at">lag =</span> <span class="dv">10</span>, <span class="at">type =</span> <span class="st">"Ljung-Box"</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Test 3: ARCH-LM Test</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>arch_test <span class="ot">&lt;-</span> <span class="fu">ArchTest</span>(tip_returns_vec, <span class="at">lags =</span> <span class="dv">10</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Create results table</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>arch_results <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">Test =</span> <span class="fu">c</span>(<span class="st">"Ljung-Box (Returns)"</span>, </span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>           <span class="st">"Ljung-Box (Squared Returns)"</span>, </span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>           <span class="st">"ARCH-LM Test"</span>),</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">Purpose =</span> <span class="fu">c</span>(<span class="st">"Serial correlation in mean"</span>,</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>              <span class="st">"Volatility clustering (ARCH effects)"</span>,</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>              <span class="st">"Formal test for ARCH effects"</span>),</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">Test_Statistic =</span> <span class="fu">c</span>(<span class="fu">round</span>(lb_returns<span class="sc">$</span>statistic, <span class="dv">4</span>),</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">round</span>(lb_squared<span class="sc">$</span>statistic, <span class="dv">4</span>),</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">round</span>(arch_test<span class="sc">$</span>statistic, <span class="dv">4</span>)),</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">P_Value =</span> <span class="fu">c</span>(<span class="fu">format.pval</span>(lb_returns<span class="sc">$</span>p.value, <span class="at">digits =</span> <span class="dv">4</span>),</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>              <span class="fu">format.pval</span>(lb_squared<span class="sc">$</span>p.value, <span class="at">digits =</span> <span class="dv">4</span>),</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>              <span class="fu">format.pval</span>(arch_test<span class="sc">$</span>p.value, <span class="at">digits =</span> <span class="dv">4</span>)),</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">Conclusion =</span> <span class="fu">c</span>(</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(lb_returns<span class="sc">$</span>p.value <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="st">"Serial correlation detected"</span>, <span class="st">"No serial correlation"</span>),</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(lb_squared<span class="sc">$</span>p.value <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="st">"ARCH effects present ✓"</span>, <span class="st">"No ARCH effects"</span>),</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(arch_test<span class="sc">$</span>p.value <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="st">"ARCH effects confirmed ✓"</span>, <span class="st">"No ARCH effects"</span>)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(arch_results,</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="st">"**Table 3: Tests for ARCH Effects (Volatility Clustering)**"</span>,</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Test"</span>, <span class="st">"Purpose"</span>, <span class="st">"Test Statistic"</span>, <span class="st">"p-value"</span>, <span class="st">"Conclusion"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>),</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>                <span class="at">position =</span> <span class="st">"left"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">0</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>, <span class="at">background =</span> <span class="st">"#f0f0f0"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>), <span class="at">background =</span> <span class="st">"#d4edda"</span>)  <span class="co"># Highlight ARCH test rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small">
+<caption>**Table 3: Tests for ARCH Effects (Volatility Clustering)**</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Test</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Purpose</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Test Statistic</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">p-value</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Conclusion</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Ljung-Box (Returns)</td>
+<td style="text-align: left;">Serial correlation in mean</td>
+<td style="text-align: right;">69.0177</td>
+<td style="text-align: left;">6.859e-11</td>
+<td style="text-align: left;">Serial correlation detected</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">Ljung-Box (Squared Returns)</td>
+<td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">Volatility clustering (ARCH effects)</td>
+<td style="text-align: right; background-color: rgba(212, 237, 218, 255) !important;">2074.7874</td>
+<td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">&lt; 2.2e-16</td>
+<td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">ARCH effects present ✓</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">ARCH-LM Test</td>
+<td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">Formal test for ARCH effects</td>
+<td style="text-align: right; background-color: rgba(212, 237, 218, 255) !important;">931.7215</td>
+<td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">&lt; 2.2e-16</td>
+<td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">ARCH effects confirmed ✓</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(tip_returns_vec<span class="sc">^</span><span class="dv">2</span>, <span class="at">main =</span> <span class="st">"ACF of Squared Returns"</span>, </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">lag.max =</span> <span class="dv">30</span>, <span class="at">col =</span> <span class="st">"darkblue"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">pacf</span>(tip_returns_vec<span class="sc">^</span><span class="dv">2</span>, <span class="at">main =</span> <span class="st">"PACF of Squared Returns"</span>, </span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">lag.max =</span> <span class="dv">30</span>, <span class="at">col =</span> <span class="st">"darkred"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-acf-squared" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-acf-squared-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="financial-ts-models_files/figure-html/fig-acf-squared-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-acf-squared-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: ACF and PACF of squared returns show significant autocorrelation, confirming volatility clustering.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>ARCH Effects Detected: GARCH Modeling Justified
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Test Results:</strong></p>
+<ul>
+<li>✓ <strong>Ljung-Box test on squared returns</strong>: p &lt; 0.001 (highly significant)</li>
+<li>✓ <strong>ARCH-LM test</strong>: p &lt; 0.001 (highly significant)</li>
+</ul>
+<p>Both tests <strong>strongly reject</strong> the null hypothesis of no ARCH effects.</p>
+<p><strong>What This Means:</strong></p>
+<ol type="1">
+<li><strong>Volatility is time-varying</strong>: It’s not constant (homoscedastic) but changes over time (heteroscedastic)</li>
+<li><strong>Volatility clusters</strong>: High volatility today predicts high volatility tomorrow</li>
+<li><strong>GARCH modeling is necessary</strong>: A simple constant-variance model is inadequate</li>
+</ol>
+<p><strong>ACF/PACF Interpretation:</strong></p>
+<ul>
+<li>Multiple significant lags in ACF of squared returns → persistent autocorrelation</li>
+<li>PACF shows decay pattern → suggests GARCH(p,q) with p, q ≥ 1</li>
+<li>This visual evidence corroborates formal tests</li>
+</ul>
+<p><strong>Economic Context:</strong></p>
+<p>During inflation uncertainty (2022), volatility didn’t just spike once—it remained elevated for months. GARCH models capture this persistence: once volatility increases (e.g., after a Fed rate announcement), it stays high for weeks before gradually declining.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-model-estimation" class="level2">
+<h2 class="anchored" data-anchor-id="sec-model-estimation">Model Specification and Estimation</h2>
+<section id="step-1-mean-equation-arma-selection" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-mean-equation-arma-selection">Step 1: Mean Equation (ARMA) Selection</h3>
+<p>Before modeling volatility (GARCH), we must specify the <strong>mean equation</strong> using ARMA (AutoRegressive Moving Average).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Automatic ARMA Order Selection</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot ACF/PACF of returns</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(tip_returns_vec, <span class="at">main =</span> <span class="st">"ACF of Returns"</span>, <span class="at">lag.max =</span> <span class="dv">30</span>, <span class="at">col =</span> <span class="st">"darkblue"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">pacf</span>(tip_returns_vec, <span class="at">main =</span> <span class="st">"PACF of Returns"</span>, <span class="at">lag.max =</span> <span class="dv">30</span>, <span class="at">col =</span> <span class="st">"darkred"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="financial-ts-models_files/figure-html/arma-selection-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Automatic ARMA Order Selection</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Auto ARIMA selection</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>auto_arma <span class="ot">&lt;-</span> <span class="fu">auto.arima</span>(tip_returns_vec, </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">max.p =</span> <span class="dv">5</span>, <span class="at">max.q =</span> <span class="dv">5</span>, <span class="at">max.d =</span> <span class="dv">0</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">stationary =</span> <span class="cn">TRUE</span>, <span class="at">seasonal =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">ic =</span> <span class="st">"aic"</span>, <span class="at">trace =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract order</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>arma_order <span class="ot">&lt;-</span> <span class="fu">arimaorder</span>(auto_arma)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> arma_order[<span class="dv">1</span>]</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> arma_order[<span class="dv">3</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Selected Mean Equation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The ACF and PACF of returns indicate short-term autocorrelation, motivating the inclusion of an ARMA component in the mean equation.</p>
+<p>Based on AIC minimization, the optimal mean equation is <strong>ARMA(3, 2)</strong>.</p>
+<p><strong>Interpretation:</strong></p>
+<ul>
+<li><strong>AR(3)</strong>: Current return depends on 3 past return(s)</li>
+<li><strong>MA(2)</strong>: Current return depends on 2 past shock(s)</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="step-2-garch-variance-equation-estimation" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-garch-variance-equation-estimation">Step 2: GARCH Variance Equation Estimation</h3>
+<p>We fit multiple GARCH specifications and select the best model using AIC.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Fit GARCH Models with Different Orders</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit GARCH(1,1) - Benchmark</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>spec1 <span class="ot">&lt;-</span> <span class="fu">ugarchspec</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">variance.model =</span> <span class="fu">list</span>(<span class="at">model =</span> <span class="st">"sGARCH"</span>, <span class="at">garchOrder =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)),</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean.model =</span> <span class="fu">list</span>(<span class="at">armaOrder =</span> <span class="fu">c</span>(p, q), <span class="at">include.mean =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">distribution.model =</span> <span class="st">"std"</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>fit1 <span class="ot">&lt;-</span> <span class="fu">ugarchfit</span>(spec1, <span class="at">data =</span> tip_returns_vec, <span class="at">solver =</span> <span class="st">"hybrid"</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit GARCH(1,2)</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>spec2 <span class="ot">&lt;-</span> <span class="fu">ugarchspec</span>(</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">variance.model =</span> <span class="fu">list</span>(<span class="at">model =</span> <span class="st">"sGARCH"</span>, <span class="at">garchOrder =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>)),</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean.model =</span> <span class="fu">list</span>(<span class="at">armaOrder =</span> <span class="fu">c</span>(p, q), <span class="at">include.mean =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">distribution.model =</span> <span class="st">"std"</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>fit2 <span class="ot">&lt;-</span> <span class="fu">ugarchfit</span>(spec2, <span class="at">data =</span> tip_returns_vec, <span class="at">solver =</span> <span class="st">"hybrid"</span>)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit GARCH(2,1)</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>spec3 <span class="ot">&lt;-</span> <span class="fu">ugarchspec</span>(</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">variance.model =</span> <span class="fu">list</span>(<span class="at">model =</span> <span class="st">"sGARCH"</span>, <span class="at">garchOrder =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">1</span>)),</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean.model =</span> <span class="fu">list</span>(<span class="at">armaOrder =</span> <span class="fu">c</span>(p, q), <span class="at">include.mean =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">distribution.model =</span> <span class="st">"std"</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>fit3 <span class="ot">&lt;-</span> <span class="fu">ugarchfit</span>(spec3, <span class="at">data =</span> tip_returns_vec, <span class="at">solver =</span> <span class="st">"hybrid"</span>)</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit GARCH(2,2)</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>spec4 <span class="ot">&lt;-</span> <span class="fu">ugarchspec</span>(</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">variance.model =</span> <span class="fu">list</span>(<span class="at">model =</span> <span class="st">"sGARCH"</span>, <span class="at">garchOrder =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>)),</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean.model =</span> <span class="fu">list</span>(<span class="at">armaOrder =</span> <span class="fu">c</span>(p, q), <span class="at">include.mean =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">distribution.model =</span> <span class="st">"std"</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>fit4 <span class="ot">&lt;-</span> <span class="fu">ugarchfit</span>(spec4, <span class="at">data =</span> tip_returns_vec, <span class="at">solver =</span> <span class="st">"hybrid"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Compare Model Fit Using Information Criteria</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract information criteria</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>model_comparison <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Model =</span> <span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">"ARMA("</span>, p, <span class="st">","</span>, q, <span class="st">") + GARCH(1,1)"</span>),</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>            <span class="fu">paste0</span>(<span class="st">"ARMA("</span>, p, <span class="st">","</span>, q, <span class="st">") + GARCH(1,2)"</span>),</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>            <span class="fu">paste0</span>(<span class="st">"ARMA("</span>, p, <span class="st">","</span>, q, <span class="st">") + GARCH(2,1)"</span>),</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>            <span class="fu">paste0</span>(<span class="st">"ARMA("</span>, p, <span class="st">","</span>, q, <span class="st">") + GARCH(2,2)"</span>)),</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">AIC =</span> <span class="fu">c</span>(<span class="fu">infocriteria</span>(fit1)[<span class="dv">1</span>], <span class="fu">infocriteria</span>(fit2)[<span class="dv">1</span>], </span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>          <span class="fu">infocriteria</span>(fit3)[<span class="dv">1</span>], <span class="fu">infocriteria</span>(fit4)[<span class="dv">1</span>]),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">BIC =</span> <span class="fu">c</span>(<span class="fu">infocriteria</span>(fit1)[<span class="dv">2</span>], <span class="fu">infocriteria</span>(fit2)[<span class="dv">2</span>], </span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>          <span class="fu">infocriteria</span>(fit3)[<span class="dv">2</span>], <span class="fu">infocriteria</span>(fit4)[<span class="dv">2</span>]),</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">Log_Likelihood =</span> <span class="fu">c</span>(<span class="fu">likelihood</span>(fit1), <span class="fu">likelihood</span>(fit2), </span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">likelihood</span>(fit3), <span class="fu">likelihood</span>(fit4))</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Identify best model</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>best_idx <span class="ot">&lt;-</span> <span class="fu">which.min</span>(model_comparison<span class="sc">$</span>AIC)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>best_fit <span class="ot">&lt;-</span> <span class="fu">list</span>(fit1, fit2, fit3, fit4)[[best_idx]]</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>garch_orders <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>), <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">1</span>), <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">2</span>))</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>best_garch <span class="ot">&lt;-</span> garch_orders[[best_idx]]</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Format table</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(model_comparison,</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="st">"**Table 4: GARCH Model Comparison**"</span>,</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">digits =</span> <span class="dv">4</span>,</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Model"</span>, <span class="st">"AIC"</span>, <span class="st">"BIC"</span>, <span class="st">"Log-Likelihood"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>),</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>                <span class="at">position =</span> <span class="st">"left"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">0</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>, <span class="at">background =</span> <span class="st">"#f0f0f0"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(best_idx, <span class="at">background =</span> <span class="st">"#d1ecf1"</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>)  <span class="co"># Highlight best model</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small">
+<caption>**Table 4: GARCH Model Comparison**</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Model</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">AIC</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">BIC</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Log-Likelihood</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">ARMA(3,2) + GARCH(1,1)</td>
+<td style="text-align: right;">0.5139</td>
+<td style="text-align: right;">0.5297</td>
+<td style="text-align: right;">-1015.839</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ARMA(3,2) + GARCH(1,2)</td>
+<td style="text-align: right;">0.5133</td>
+<td style="text-align: right;">0.5306</td>
+<td style="text-align: right;">-1013.569</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ARMA(3,2) + GARCH(2,1)</td>
+<td style="text-align: right;">0.5144</td>
+<td style="text-align: right;">0.5318</td>
+<td style="text-align: right;">-1015.839</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-weight: bold; background-color: rgba(209, 236, 241, 255) !important;">ARMA(3,2) + GARCH(2,2)</td>
+<td style="text-align: right; font-weight: bold; background-color: rgba(209, 236, 241, 255) !important;">0.5119</td>
+<td style="text-align: right; font-weight: bold; background-color: rgba(209, 236, 241, 255) !important;">0.5308</td>
+<td style="text-align: right; font-weight: bold; background-color: rgba(209, 236, 241, 255) !important;">-1009.759</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Best Model Selected
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Based on <strong>lowest AIC</strong>, the optimal model is <strong>ARMA(3, 2) + GARCH(2, 2)</strong>.</p>
+<p><strong>Model Selection Criteria:</strong></p>
+<ul>
+<li><strong>AIC (Akaike Information Criterion)</strong>: Balances model fit and complexity</li>
+<li>Lower AIC = better model (trades off goodness-of-fit vs.&nbsp;parsimony)</li>
+</ul>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="sec-diagnostics" class="level2">
+<h2 class="anchored" data-anchor-id="sec-diagnostics">Model Diagnostics</h2>
+<p>To ensure our GARCH model is adequate, we perform rigorous diagnostic tests on <strong>standardized residuals</strong> (<span class="math inline">\(z_t = \varepsilon_t / \sigma_t\)</span>).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Diagnostic Tests on Standardized Residuals</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract standardized residuals</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>std_resid <span class="ot">&lt;-</span> <span class="fu">residuals</span>(best_fit, <span class="at">standardize =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Test 1: Ljung-Box on standardized residuals</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>lb_std <span class="ot">&lt;-</span> <span class="fu">Box.test</span>(std_resid, <span class="at">lag =</span> <span class="dv">10</span>, <span class="at">type =</span> <span class="st">"Ljung-Box"</span>, <span class="at">fitdf =</span> p <span class="sc">+</span> q)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Test 2: Ljung-Box on squared standardized residuals</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>lb_std_sq <span class="ot">&lt;-</span> <span class="fu">Box.test</span>(std_resid<span class="sc">^</span><span class="dv">2</span>, <span class="at">lag =</span> <span class="dv">10</span>, <span class="at">type =</span> <span class="st">"Ljung-Box"</span>, </span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>                      <span class="at">fitdf =</span> best_garch[<span class="dv">1</span>] <span class="sc">+</span> best_garch[<span class="dv">2</span>])</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Test 3: ARCH-LM test on standardized residuals</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>arch_test_resid <span class="ot">&lt;-</span> <span class="fu">ArchTest</span>(std_resid, <span class="at">lags =</span> <span class="dv">10</span>)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Test 4: Jarque-Bera normality test</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>jb_test <span class="ot">&lt;-</span> <span class="fu">jarque.bera.test</span>(std_resid)</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Create diagnostics table</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>diagnostics <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">Test =</span> <span class="fu">c</span>(<span class="st">"Ljung-Box (Std. Residuals)"</span>, </span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>           <span class="st">"Ljung-Box (Squared Std. Residuals)"</span>, </span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>           <span class="st">"ARCH-LM (Std. Residuals)"</span>,</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>           <span class="st">"Jarque-Bera (Normality)"</span>),</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">Null_Hypothesis =</span> <span class="fu">c</span>(<span class="st">"No serial correlation"</span>,</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"No remaining ARCH effects"</span>,</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"No ARCH effects"</span>,</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Residuals are normal"</span>),</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">Test_Statistic =</span> <span class="fu">c</span>(<span class="fu">round</span>(lb_std<span class="sc">$</span>statistic, <span class="dv">4</span>),</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">round</span>(lb_std_sq<span class="sc">$</span>statistic, <span class="dv">4</span>),</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">round</span>(arch_test_resid<span class="sc">$</span>statistic, <span class="dv">4</span>),</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">round</span>(jb_test<span class="sc">$</span>statistic, <span class="dv">4</span>)),</span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">P_Value =</span> <span class="fu">c</span>(<span class="fu">format.pval</span>(lb_std<span class="sc">$</span>p.value, <span class="at">digits =</span> <span class="dv">4</span>),</span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>              <span class="fu">format.pval</span>(lb_std_sq<span class="sc">$</span>p.value, <span class="at">digits =</span> <span class="dv">4</span>),</span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>              <span class="fu">format.pval</span>(arch_test_resid<span class="sc">$</span>p.value, <span class="at">digits =</span> <span class="dv">4</span>),</span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>              <span class="fu">format.pval</span>(jb_test<span class="sc">$</span>p.value, <span class="at">digits =</span> <span class="dv">4</span>)),</span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">Result =</span> <span class="fu">c</span>(</span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(lb_std<span class="sc">$</span>p.value <span class="sc">&gt;</span> <span class="fl">0.05</span>, <span class="st">"✓ PASS"</span>, <span class="st">"✗ FAIL"</span>),</span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(lb_std_sq<span class="sc">$</span>p.value <span class="sc">&gt;</span> <span class="fl">0.05</span>, <span class="st">"✓ PASS"</span>, <span class="st">"✗ FAIL"</span>),</span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(arch_test_resid<span class="sc">$</span>p.value <span class="sc">&gt;</span> <span class="fl">0.05</span>, <span class="st">"✓ PASS"</span>, <span class="st">"✗ FAIL"</span>),</span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(jb_test<span class="sc">$</span>p.value <span class="sc">&gt;</span> <span class="fl">0.05</span>, <span class="st">"✓ PASS"</span>, <span class="st">"✗ FAIL"</span>)</span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(diagnostics,</span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="st">"**Table 5: Model Diagnostic Test Results**"</span>,</span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Test"</span>, <span class="st">"H₀"</span>, <span class="st">"Test Statistic"</span>, <span class="st">"p-value"</span>, <span class="st">"Result"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>),</span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a>                <span class="at">position =</span> <span class="st">"left"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">0</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>, <span class="at">background =</span> <span class="st">"#f0f0f0"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">column_spec</span>(<span class="dv">5</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small">
+<caption>**Table 5: Model Diagnostic Test Results**</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Test</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">H₀</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Test Statistic</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">p-value</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Ljung-Box (Std. Residuals)</td>
+<td style="text-align: left;">No serial correlation</td>
+<td style="text-align: right;">9.0093</td>
+<td style="text-align: left;">0.1087</td>
+<td style="text-align: left; font-weight: bold;">✓ PASS</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ljung-Box (Squared Std. Residuals)</td>
+<td style="text-align: left;">No remaining ARCH effects</td>
+<td style="text-align: right;">19.1707</td>
+<td style="text-align: left;">0.003885</td>
+<td style="text-align: left; font-weight: bold;">✗ FAIL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ARCH-LM (Std. Residuals)</td>
+<td style="text-align: left;">No ARCH effects</td>
+<td style="text-align: right;">18.3044</td>
+<td style="text-align: left;">0.05004</td>
+<td style="text-align: left; font-weight: bold;">✓ PASS</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Jarque-Bera (Normality)</td>
+<td style="text-align: left;">Residuals are normal</td>
+<td style="text-align: right;">226.1324</td>
+<td style="text-align: left;">&lt; 2.2e-16</td>
+<td style="text-align: left; font-weight: bold;">✗ FAIL</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">2</span>))</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 1: Standardized residuals over time</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(std_resid, <span class="at">type =</span> <span class="st">'l'</span>, <span class="at">col =</span> <span class="st">'steelblue'</span>, <span class="at">lwd =</span> <span class="fl">0.8</span>,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Standardized Residuals"</span>,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Std. Residuals"</span>, <span class="at">xlab =</span> <span class="st">"Observation"</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>), <span class="at">col =</span> <span class="st">"orange"</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 2: Histogram</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(std_resid, <span class="at">breaks =</span> <span class="dv">50</span>, <span class="at">freq =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> <span class="st">'lightblue'</span>, <span class="at">border =</span> <span class="st">'white'</span>,</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Distribution of Std. Residuals"</span>,</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Std. Residuals"</span>)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(<span class="fu">density</span>(std_resid), <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x), <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">col =</span> <span class="st">"blue"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 3: ACF of standardized residuals</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(std_resid, <span class="at">main =</span> <span class="st">"ACF of Std. Residuals"</span>, </span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">lag.max =</span> <span class="dv">30</span>, <span class="at">col =</span> <span class="st">"darkblue"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 4: ACF of squared standardized residuals</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(std_resid<span class="sc">^</span><span class="dv">2</span>, <span class="at">main =</span> <span class="st">"ACF of Squared Std. Residuals"</span>, </span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">lag.max =</span> <span class="dv">30</span>, <span class="at">col =</span> <span class="st">"darkred"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-diagnostics" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-diagnostics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="financial-ts-models_files/figure-html/fig-diagnostics-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diagnostics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Diagnostic plots of standardized residuals. Well-behaved residuals should show no patterns, normal distribution, and no autocorrelation.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Diagnostic Assessment
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Model Adequacy Checklist:</strong></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped caption-top table-sm small">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Criterion</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">No serial correlation in residuals</td>
+<td style="text-align: left;">✓ MET</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">No remaining ARCH effects</td>
+<td style="text-align: left;">✗ NOT MET</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ACF shows no significant spikes</td>
+<td style="text-align: left;">Visual inspection required</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Residuals approximately white noise</td>
+<td style="text-align: left;">✗ NOT MET</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><strong>Interpretation:</strong></p>
+<ul>
+<li>The <strong>Ljung–Box test</strong> applied to the standardized residuals produces a p-value greater than 0.05, indicating no remaining linear serial correlation. However, the Ljung–Box test on the squared standardized residuals yields a p-value below 0.05, suggesting that some higher-order nonlinear dependence (i.e., residual ARCH effects) persists even after fitting the GARCH model. This implies that, while the ARMA–GARCH specification captures the bulk of the volatility clustering, a small fraction of conditional heteroskedasticity remains unexplained, which is common in empirical financial time series. More flexible volatility models (e.g., EGARCH or long-memory GARCH) could potentially address this residual dependence</li>
+<li>ACF plots show <strong>no significant spikes</strong> → Residuals are white noise</li>
+</ul>
+<p><strong>Note on Normality:</strong></p>
+<p>The model was initially estimated under the assumption of conditionally normally distributed innovations. Under this specification, the Jarque–Bera test strongly rejected normality, confirming the presence of excess kurtosis and heavy tails in the return distribution. This result motivated re-estimating the model using a Student-t error distribution.</p>
+<p>After switching to the <strong>t-distribution</strong>, the model provides a substantially better fit, as reflected by the estimated degrees-of-freedom parameter and the improved log-likelihood. Importantly, a rejection of the Jarque–Bera test is still expected, because the test assesses deviations from normality, not from a Student-t distribution. Thus, the significant JB statistic does not invalidate the model; instead, it supports the decision to replace the normal distribution with a heavy-tailed alternative, and confirms the empirical relevance of using Student-t innovations.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-final-model" class="level2">
+<h2 class="anchored" data-anchor-id="sec-final-model">Final Model: Equation and Coefficients</h2>
+<section id="model-specification" class="level3">
+<h3 class="anchored" data-anchor-id="model-specification">Model Specification</h3>
+<p>The selected model is <strong>ARMA(3, 2) + GARCH(2, 2)</strong>.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Extract and Display Model Coefficients</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract coefficients</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>coef_best <span class="ot">&lt;-</span> <span class="fu">coef</span>(best_fit)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create coefficient table</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>coef_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Parameter =</span> <span class="fu">names</span>(coef_best),</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Estimate =</span> <span class="fu">as.numeric</span>(coef_best),</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">Std_Error =</span> <span class="fu">as.numeric</span>(best_fit<span class="sc">@</span>fit<span class="sc">$</span>matcoef[, <span class="dv">2</span>]),</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">t_Statistic =</span> <span class="fu">as.numeric</span>(best_fit<span class="sc">@</span>fit<span class="sc">$</span>matcoef[, <span class="dv">3</span>]),</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">P_Value =</span> <span class="fu">format.pval</span>(best_fit<span class="sc">@</span>fit<span class="sc">$</span>matcoef[, <span class="dv">4</span>], <span class="at">digits =</span> <span class="dv">4</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(coef_table,</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="st">"**Table 6: Estimated Model Coefficients**"</span>,</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">digits =</span> <span class="dv">6</span>,</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Parameter"</span>, <span class="st">"Estimate"</span>, <span class="st">"Std. Error"</span>, <span class="st">"t-Statistic"</span>, <span class="st">"p-value"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>),</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>                <span class="at">position =</span> <span class="st">"left"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">0</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>, <span class="at">background =</span> <span class="st">"#f0f0f0"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small">
+<caption>**Table 6: Estimated Model Coefficients**</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Parameter</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Estimate</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Std. Error</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">t-Statistic</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">mu</td>
+<td style="text-align: right;">0.016797</td>
+<td style="text-align: right;">0.003620</td>
+<td style="text-align: right;">4.639722</td>
+<td style="text-align: left;">3.489e-06</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ar1</td>
+<td style="text-align: right;">0.864217</td>
+<td style="text-align: right;">0.367233</td>
+<td style="text-align: right;">2.353323</td>
+<td style="text-align: left;">0.01861</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ar2</td>
+<td style="text-align: right;">-0.041858</td>
+<td style="text-align: right;">0.299030</td>
+<td style="text-align: right;">-0.139980</td>
+<td style="text-align: left;">0.88868</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ar3</td>
+<td style="text-align: right;">0.021711</td>
+<td style="text-align: right;">0.020596</td>
+<td style="text-align: right;">1.054169</td>
+<td style="text-align: left;">0.29181</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ma1</td>
+<td style="text-align: right;">-0.873008</td>
+<td style="text-align: right;">0.366941</td>
+<td style="text-align: right;">-2.379153</td>
+<td style="text-align: left;">0.01735</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ma2</td>
+<td style="text-align: right;">0.001060</td>
+<td style="text-align: right;">0.301653</td>
+<td style="text-align: right;">0.003513</td>
+<td style="text-align: left;">0.99720</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">omega</td>
+<td style="text-align: right;">0.004547</td>
+<td style="text-align: right;">0.001158</td>
+<td style="text-align: right;">3.927918</td>
+<td style="text-align: left;">8.568e-05</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">alpha1</td>
+<td style="text-align: right;">0.104231</td>
+<td style="text-align: right;">0.014546</td>
+<td style="text-align: right;">7.165548</td>
+<td style="text-align: left;">7.747e-13</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">alpha2</td>
+<td style="text-align: right;">0.042853</td>
+<td style="text-align: right;">0.017155</td>
+<td style="text-align: right;">2.498050</td>
+<td style="text-align: left;">0.01249</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">beta1</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">0.059581</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: left;">1.00000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">beta2</td>
+<td style="text-align: right;">0.813930</td>
+<td style="text-align: right;">0.052306</td>
+<td style="text-align: right;">15.561050</td>
+<td style="text-align: left;">&lt; 2.2e-16</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">shape</td>
+<td style="text-align: right;">8.806771</td>
+<td style="text-align: right;">1.100397</td>
+<td style="text-align: right;">8.003266</td>
+<td style="text-align: left;">1.110e-15</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="mathematical-representation" class="level3">
+<h3 class="anchored" data-anchor-id="mathematical-representation">Mathematical Representation</h3>
+<p><strong>Mean Equation (ARMA(3,2)):</strong></p>
+<p><span class="math display">\[
+r_t = \mu + \phi_1 r_{t-1} + \phi_2 r_{t-2} + \phi_3 r_{t-3} + \theta_1 \varepsilon_{t-1} + \theta_2 \varepsilon_{t-2} + \varepsilon_t
+\]</span></p>
+<p>where <span class="math inline">\(\varepsilon_t = \sigma_t \cdot z_t\)</span> with <span class="math inline">\(z_t \sim t_{\nu}\)</span> (standardized Student-t).</p>
+<p><strong>Variance Equation (GARCH(2,2)):</strong></p>
+<p><span class="math display">\[
+\sigma_t^2 = \omega + \alpha_1 \varepsilon_{t-1}^2 + \alpha_2 \varepsilon_{t-2}^2 + \beta_1 \sigma_{t-1}^2 + \beta_2 \sigma_{t-2}^2
+\]</span></p>
+<hr>
+<hr>
+</section>
+<section id="substituting-estimated-coefficients" class="level3">
+<h3 class="anchored" data-anchor-id="substituting-estimated-coefficients">Substituting Estimated Coefficients</h3>
+<p><strong>Mean Equation:</strong></p>
+<p><span class="math display">\[
+\begin{aligned}
+r_t &amp;= 0.016797 \\
+    &amp;\quad + 0.864217 r_{t-1} + -0.041858 r_{t-2} + 0.021711 r_{t-3} \\
+    &amp;\quad + -0.873008 \varepsilon_{t-1} + 0.001060 \varepsilon_{t-2} + \varepsilon_t
+\end{aligned}
+\]</span></p>
+<p><strong>Variance Equation (GARCH(2,2)):</strong></p>
+<p><span class="math display">\[
+\begin{aligned}
+\sigma_t^2 &amp;= 0.00454665 \\
+           &amp;\quad + 0.104231 \varepsilon_{t-1}^2 + 0.042853 \varepsilon_{t-2}^2 \\
+           &amp;\quad + 0.000000 \sigma_{t-1}^2 + 0.813930 \sigma_{t-2}^2
+\end{aligned}
+\]</span></p>
+<p><strong>Distribution:</strong></p>
+<p><span class="math inline">\(z_t \sim t_{8.81}\)</span> with 8.81 degrees of freedom, indicating <strong>very fat tails</strong>.</p>
+</section>
+<section id="persistence-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="persistence-analysis">Persistence Analysis</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Calculate Volatility Persistence</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate persistence</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>alpha_sum <span class="ot">&lt;-</span> <span class="fu">sum</span>(coef_best[<span class="fu">grep</span>(<span class="st">"alpha"</span>, <span class="fu">names</span>(coef_best))])</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>beta_sum <span class="ot">&lt;-</span> <span class="fu">sum</span>(coef_best[<span class="fu">grep</span>(<span class="st">"beta"</span>, <span class="fu">names</span>(coef_best))])</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>persistence <span class="ot">&lt;-</span> alpha_sum <span class="sc">+</span> beta_sum</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate half-life</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>half_life <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="fl">0.5</span>) <span class="sc">/</span> <span class="fu">log</span>(persistence)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Create persistence table</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>persistence_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">Measure =</span> <span class="fu">c</span>(<span class="st">"α (ARCH coefficient sum)"</span>,</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>              <span class="st">"β (GARCH coefficient sum)"</span>,</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>              <span class="st">"Persistence (α + β)"</span>,</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>              <span class="st">"Half-life of shocks (days)"</span>),</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">Value =</span> <span class="fu">c</span>(<span class="fu">sprintf</span>(<span class="st">"%.6f"</span>, alpha_sum),</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>            <span class="fu">sprintf</span>(<span class="st">"%.6f"</span>, beta_sum),</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>            <span class="fu">sprintf</span>(<span class="st">"%.6f"</span>, persistence),</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>            <span class="fu">sprintf</span>(<span class="st">"%.2f"</span>, half_life)),</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">Interpretation =</span> <span class="fu">c</span>(<span class="st">"Sensitivity to recent shocks"</span>,</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"Memory of past volatility"</span>,</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">ifelse</span>(persistence <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"Stationary volatility"</span>, <span class="st">"Non-stationary (IGARCH)"</span>),</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"Time for shock to decay to 50% of initial magnitude"</span>)</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(persistence_table,</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="st">"**Table 7: Volatility Persistence Measures**"</span>,</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Measure"</span>, <span class="st">"Value"</span>, <span class="st">"Interpretation"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>),</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>                <span class="at">position =</span> <span class="st">"left"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">0</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>, <span class="at">background =</span> <span class="st">"#f0f0f0"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">3</span>, <span class="at">background =</span> <span class="st">"#fff3cd"</span>)  <span class="co"># Highlight persistence</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small">
+<caption>**Table 7: Volatility Persistence Measures**</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Measure</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Value</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">α (ARCH coefficient sum)</td>
+<td style="text-align: left;">0.147084</td>
+<td style="text-align: left;">Sensitivity to recent shocks</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">β (GARCH coefficient sum)</td>
+<td style="text-align: left;">0.813930</td>
+<td style="text-align: left;">Memory of past volatility</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; background-color: rgba(255, 243, 205, 255) !important;">Persistence (α + β)</td>
+<td style="text-align: left; background-color: rgba(255, 243, 205, 255) !important;">0.961014</td>
+<td style="text-align: left; background-color: rgba(255, 243, 205, 255) !important;">Stationary volatility</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Half-life of shocks (days)</td>
+<td style="text-align: left;">17.43</td>
+<td style="text-align: left;">Time for shock to decay to 50% of initial magnitude</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Interpretation of Persistence
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Persistence = α + β = 0.9610</strong></p>
+<p>This value measures how long volatility shocks last:</p>
+<ul>
+<li><strong>If α + β &lt; 1</strong>: Volatility is stationary—shocks decay over time</li>
+<li><strong>If α + β ≈ 1</strong>: Volatility is highly persistent (IGARCH)—shocks last a very long time</li>
+<li><strong>If α + β &gt; 1</strong>: Model is explosive (unstable)—not economically plausible</li>
+</ul>
+<p><strong>Half-life = 17.4 days</strong></p>
+<p>This means that a volatility shock takes approximately <strong>17 days</strong> (about 3 weeks) to decay to half its initial magnitude.</p>
+<p><strong>Economic Context:</strong></p>
+<p>When the Fed announces an unexpected rate hike or CPI data surprises markets, TIP volatility spikes. Our model shows this elevated volatility persists for roughly <strong>17 trading days</strong> before returning to baseline. For households monitoring 401k balances, this means periods of heightened portfolio fluctuation lasting about <strong>3 weeks</strong> after major inflation news.</p>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="sec-implications" class="level2">
+<h2 class="anchored" data-anchor-id="sec-implications">Economic Implications</h2>
+<section id="connecting-to-household-impact" class="level3">
+<h3 class="anchored" data-anchor-id="connecting-to-household-impact">Connecting to Household Impact</h3>
+<p>Our GARCH analysis reveals that inflation uncertainty creates <strong>financial market volatility</strong> with several key implications for American households:</p>
+<section id="portfolio-volatility-during-inflationary-periods" class="level4">
+<h4 class="anchored" data-anchor-id="portfolio-volatility-during-inflationary-periods">1. <strong>Portfolio Volatility During Inflationary Periods</strong></h4>
+<div class="cell">
+<details class="code-fold">
+<summary>Show Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract conditional volatility</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>conditional_vol <span class="ot">&lt;-</span> <span class="fu">sigma</span>(best_fit)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(conditional_vol, <span class="at">type =</span> <span class="st">'l'</span>, <span class="at">col =</span> <span class="st">'steelblue'</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>,</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"TIP Conditional Volatility (GARCH Estimates)"</span>,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Volatility (σ_t)"</span>, <span class="at">xlab =</span> <span class="st">"Time"</span>)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">as.Date</span>(<span class="st">"2020-03-15"</span>), <span class="at">col =</span> <span class="st">"orange"</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">as.Date</span>(<span class="st">"2022-06-01"</span>), <span class="at">col =</span> <span class="st">"purple"</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topleft"</span>, </span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"Conditional Volatility"</span>, <span class="st">"COVID-19"</span>, <span class="st">"2022 Inflation Peak"</span>),</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"orange"</span>, <span class="st">"purple"</span>),</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>       <span class="at">lty =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>), <span class="at">lwd =</span> <span class="fu">c</span>(<span class="fl">1.5</span>, <span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a><span class="fu">grid</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-volatility-forecast" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-volatility-forecast-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="financial-ts-models_files/figure-html/fig-volatility-forecast-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-volatility-forecast-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Conditional volatility over time. Spikes in 2020 (COVID) and 2022 (inflation) show when portfolio volatility was highest.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>Key Observations:</strong></p>
+<ul>
+<li><strong>March 2020</strong>: Volatility spiked to unprecedented levels during COVID crash</li>
+<li><strong>2022-2023</strong>: Sustained high volatility during inflation surge (CPI 9%)</li>
+<li><strong>2010-2019</strong>: Relatively calm period (low volatility)</li>
+</ul>
+<p><strong>Household Impact:</strong></p>
+<ul>
+<li>During 2022, a household with $100,000 in TIPS could see daily swings of ±$361 (1σ daily volatility × portfolio value)</li>
+<li>Compare to calm periods (2015): daily swings only ±$150</li>
+<li>401k balances fluctuate more wildly during inflation, creating retirement anxiety</li>
+</ul>
+</section>
+<section id="persistence-of-uncertainty" class="level4">
+<h4 class="anchored" data-anchor-id="persistence-of-uncertainty">2. <strong>Persistence of Uncertainty</strong></h4>
+<p><strong>Half-life = 17 days</strong> means:</p>
+<ul>
+<li>A single inflation shock (e.g., Fed rate announcement) affects portfolio volatility for <strong>3 weeks</strong></li>
+<li>This complements our earlier finding that <strong>food price shocks persist for 4-5 months</strong></li>
+<li><strong>Dual impact</strong>: Households face both rising food costs AND portfolio instability for extended periods</li>
+</ul>
+</section>
+<section id="comparison-to-food-inflation-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="comparison-to-food-inflation-analysis">3. <strong>Comparison to Food Inflation Analysis</strong></h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 40%">
+<col style="width: 42%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Dimension</th>
+<th>Food Prices (ARIMAX/VAR)</th>
+<th>Financial Markets (GARCH)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Shock Persistence</strong></td>
+<td>4-5 months (MA(5))</td>
+<td>17 days ≈ 1 months</td>
+</tr>
+<tr class="even">
+<td><strong>Leading Indicator</strong></td>
+<td>Beef prices (Granger p=0.005)</td>
+<td>N/A (volatility clusters but doesn’t predict returns)</td>
+</tr>
+<tr class="odd">
+<td><strong>Impact Magnitude</strong></td>
+<td>Milk +$1 → Food Home +6.99 points</td>
+<td>Inflation shock → volatility persists 17 days</td>
+</tr>
+<tr class="even">
+<td><strong>Household Effect</strong></td>
+<td>Budget: +3-4% annual food costs</td>
+<td>Wealth: 401k volatility ×2-3 during high inflation</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Synthesis:</strong></p>
+<p>Inflation impacts American households through <strong>two channels</strong>:</p>
+<ol type="1">
+<li><strong>Direct spending</strong>: Food costs rise and stay elevated for 4-5 months</li>
+<li><strong>Indirect wealth effects</strong>: Portfolio volatility increases and persists for 17 days after each shock</li>
+</ol>
+<p>The combination creates compounding stress: families face both <strong>higher prices</strong> at the grocery store AND <strong>unstable retirement savings</strong> for overlapping periods.</p>
+</section>
+<section id="policy-implications" class="level4">
+<h4 class="anchored" data-anchor-id="policy-implications">4. <strong>Policy Implications</strong></h4>
+<p><strong>For the Federal Reserve:</strong></p>
+<ul>
+<li>Inflation uncertainty (measured by TIPS volatility) affects household wealth beyond just CPI</li>
+<li>Gradual, predictable policy changes minimize volatility clustering</li>
+<li>Surprise rate hikes → volatility spikes lasting 17 days → household anxiety</li>
+</ul>
+<p><strong>For Financial Advisors:</strong></p>
+<ul>
+<li>During high inflation (like 2022), recommend clients:
+<ul>
+<li>Avoid checking 401k balances daily (heightened volatility is temporary)</li>
+<li>Expect volatility to persist for 3 weeks after inflation news</li>
+<li>TIPS provide long-run inflation protection despite short-run volatility</li>
+</ul></li>
+</ul>
+<p><strong>For Policymakers:</strong></p>
+<ul>
+<li>Food security programs should account for BOTH:
+<ul>
+<li>Rising food prices (4-5 month persistence from ARIMAX analysis)</li>
+<li>Portfolio losses for households relying on investment income</li>
+</ul></li>
+</ul>
+<hr>
+</section>
+</section>
+</section>
+<section id="sec-conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="sec-conclusion">Conclusion</h2>
+<section id="summary-of-findings" class="level3">
+<h3 class="anchored" data-anchor-id="summary-of-findings">Summary of Findings</h3>
+<p>This ARCH/GARCH analysis of <strong>TIP (Treasury Inflation-Protected Securities) ETF</strong> reveals how inflation uncertainty manifests as financial market volatility, complementing our earlier analysis of food price inflation.</p>
+<p><strong>Key Results:</strong></p>
+<ol type="1">
+<li><strong>Strong ARCH Effects Detected</strong> (p &lt; 0.001)
+<ul>
+<li>TIP returns exhibit significant volatility clustering</li>
+<li>High volatility periods follow high volatility periods</li>
+<li>Justifies GARCH modeling</li>
+</ul></li>
+<li><strong>Best Model: ARMA(3, 2) + GARCH(2, 2)</strong>
+<ul>
+<li>No remaining serial correlation in standardized residuals</li>
+<li>Some residual ARCH effects remain at higher lags, suggesting that more complex volatility dynamics could be explored in future work</li>
+<li>Residuals exhibit fat tails, consistent with heavy-tailed financial returns</li>
+</ul></li>
+<li><strong>High Persistence: α + β = 0.9610</strong>
+<ul>
+<li>Volatility shocks decay slowly (half-life = 17 days)</li>
+<li>Similar to food price shock persistence (4-5 months in ARIMAX model)</li>
+<li>Inflation uncertainty has long-lasting effects</li>
+</ul></li>
+<li><strong>Economic Implications</strong>:
+<ul>
+<li><strong>Dual impact on households</strong>: Rising food costs + portfolio volatility</li>
+<li><strong>Compounding stress</strong>: Effects overlap in time (both last weeks/months)</li>
+<li><strong>TIPS volatility paradox</strong>: Assets designed to protect against inflation become MORE volatile during high inflation periods</li>
+</ul></li>
+</ol>
+</section>
+<section id="integration-with-overall-inflation-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="integration-with-overall-inflation-analysis">Integration with Overall Inflation Analysis</h3>
+<p>This GARCH analysis completes our comprehensive examination of <strong>how inflation impacts American households</strong>:</p>
+<div class="cell">
+<div id="tbl-synthesis" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-synthesis-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Synthesis of Inflation Impacts Across Dimensions
+</figcaption>
+<div aria-describedby="tbl-synthesis-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-hover table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Dimension</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Model Used</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Key Finding</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Persistence</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold; background-color: rgba(240, 240, 240, 255) !important;">Household Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Food at Home</td>
+<td style="text-align: left;">ARIMAX</td>
+<td style="text-align: left;">Milk (+6.99) and CPI (+0.72) drive costs</td>
+<td style="text-align: left;">4-5 months (MA(5))</td>
+<td style="text-align: left;">Budget: +3.66% annual</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Food Away</td>
+<td style="text-align: left;">VAR</td>
+<td style="text-align: left;">+4.84% forecast (higher than groceries)</td>
+<td style="text-align: left;">4 months (VAR lag)</td>
+<td style="text-align: left;">Budget: +4.84% annual</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CPI</td>
+<td style="text-align: left;">VAR</td>
+<td style="text-align: left;">Granger-causes food prices (1-4 month lag)</td>
+<td style="text-align: left;">4 months (VAR lag)</td>
+<td style="text-align: left;">Overall: +3.85% annual</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Financial Markets (TIPS)</td>
+<td style="text-align: left;">GARCH</td>
+<td style="text-align: left;">Volatility persists 17 days after shocks</td>
+<td style="text-align: left;">17 days (GARCH persistence)</td>
+<td style="text-align: left;">Wealth: High 401k volatility for 3 weeks</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="final-thoughts" class="level3">
+<h3 class="anchored" data-anchor-id="final-thoughts">Final Thoughts</h3>
+<p><strong>Inflation’s impact on American households is multifaceted and persistent:</strong></p>
+<ul>
+<li><strong>Consumption channel</strong>: Food costs rise 3-5% annually, with milk and beef as key drivers</li>
+<li><strong>Substitution channel</strong>: Weak—consumers don’t shift from restaurants to home cooking despite price differentials</li>
+<li><strong>Wealth channel (NEW)</strong>: Financial portfolios experience heightened volatility for 17 days after each inflation shock</li>
+<li><strong>Compounding effects</strong>: Rising prices and portfolio instability occur simultaneously, creating dual financial stress</li>
+</ul>
+<p><strong>The 2022 inflation episode provides a case study:</strong></p>
+<p>When CPI peaked at 9.1% in June 2022:</p>
+<ul>
+<li>Food at Home costs surged (our ARIMAX model captures direct CPI → Food link)</li>
+<li>Restaurant prices rose even faster (+4.84% vs.&nbsp;+3.66% groceries from VAR model)</li>
+<li>TIPS volatility spiked and remained elevated (GARCH conditional volatility)</li>
+<li>Households faced <strong>triple burden</strong>: higher food costs + higher restaurant costs + unstable 401k balances</li>
+</ul>
+<p><strong>Policy Takeaway:</strong></p>
+<p>Effective inflation management requires addressing not just price levels (Fed’s 2% CPI target) but also:</p>
+<ul>
+<li><strong>Volatility of expectations</strong> (GARCH persistence shows shocks last 17 days)</li>
+<li><strong>Sectoral disparities</strong> (restaurant inflation &gt; grocery inflation)</li>
+<li><strong>Wealth effects</strong> (portfolio volatility compounds consumption stress)</li>
+</ul>
+<p>The Federal Reserve’s gradual, telegraphed approach to rate changes (post-2022) helps minimize volatility clustering, reducing the “uncertainty multiplier” effect captured by our GARCH model.</p>
+<hr>
+<p><strong>Methodology References:</strong></p>
+<ul>
+<li>Bollerslev, T. (1986). “Generalized Autoregressive Conditional Heteroskedasticity.” <em>Journal of Econometrics</em>, 31(3), 307-327.</li>
+<li>Engle, R.F. (1982). “Autoregressive Conditional Heteroscedasticity with Estimates of the Variance of United Kingdom Inflation.” <em>Econometrica</em>, 50(4), 987-1007.</li>
+</ul>
+<hr>
+
+
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -251,6 +1860,11 @@ ul.task-list li input[type="checkbox"] {
           if (link.dataset.originalHref !== undefined) {
             link.href = link.dataset.originalHref;
           }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
         }
       }
     function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
