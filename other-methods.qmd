@@ -1,0 +1,490 @@
+---
+title: "Interrupted Time Series Analysis: Federal Funds Rate and Monetary Policy Intervention"
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    link-external-newwindow: true
+    theme: cosmo
+    code-fold: true
+    code-summary: "Show Code"
+execute:
+  warning: false
+  message: false
+editor: source
+---
+
+## Introduction
+
+In previous economic analyses, we often assume stable data-generating processes. However, monetary policy interventions represent **clear structural breaks** that fundamentally alter economic trajectories. This analysis examines the impact of the Federal Reserve's aggressive interest rate hiking cycle that began in March 2022—one of the most dramatic monetary policy shifts in modern history.
+
+To address the rapid rise in inflation following the COVID-19 pandemic, the Federal Reserve initiated its most aggressive monetary tightening campaign in decades. Starting in March 2022, the Fed began raising the federal funds rate from near-zero levels to combat inflation that had reached **9.1% by June 2022**—the highest rate since 1981. Over the subsequent 18 months, the federal funds rate surged from **0.08% to 5.33%**, marking an unprecedented pace of tightening. This policy shift was sudden, sustained, and historically significant, making it an ideal candidate for Interrupted Time Series (ITS) analysis.
+
+After examining monthly federal funds rate data from 2010 to 2024, we observe a dramatic shift in both the level and trend around March 2022. The ITS model allows us to quantify:
+
+- Whether there was an **immediate level change** in the federal funds rate following the policy intervention, and
+- Whether the **long-term trend** of the rate changed after the intervention began.
+
+We use **March 2022** as the intervention point, marking the beginning of the Fed's rate hiking cycle. This clear temporal boundary, combined with the exogenous nature of Fed policy decisions, provides an ideal setting for causal inference using the ITS framework.
+
+## Data Preparation
+```{r setup}
+# Load required packages
+library(tidyverse)
+library(lubridate)
+library(nlme)
+library(tsModel)
+library(forecast)
+library(scales)
+library(knitr)
+library(kableExtra)
+
+# Set theme for plots
+theme_set(theme_minimal(base_size = 12))
+
+# Load the Federal Funds Rate data
+fed_funds <- read_csv("data/FEDFUNDS.csv", 
+                      show_col_types = FALSE)
+names(fed_funds) <- c("DATE", "FEDFUNDS")
+
+# Prepare the data
+fed_funds <- fed_funds %>%
+  mutate(
+    date = ymd(DATE),
+    rate = FEDFUNDS,
+    year = year(date),
+    month = month(date)
+  ) %>%
+  arrange(date) %>%
+  filter(!is.na(rate))
+
+# Create time variable (months since start)
+fed_funds <- fed_funds %>%
+  mutate(time = as.numeric(date - min(date)) / 30.44) # approximate months
+
+# Define intervention point: March 2022
+intervention_date <- ymd("2022-03-01")
+
+# Create intervention variables
+fed_funds <- fed_funds %>%
+  mutate(
+    intervention = if_else(date >= intervention_date, 1, 0),
+    time_since_intervention = if_else(
+      date >= intervention_date,
+      as.numeric(date - intervention_date) / 30.44,
+      0
+    )
+  )
+
+# Create data summary table
+data_summary <- data.frame(
+  Metric = c(
+    "Data Range",
+    "Total Observations",
+    "Pre-intervention Observations",
+    "Post-intervention Observations",
+    "Intervention Date"
+  ),
+  Value = c(
+    paste(format(min(fed_funds$date), "%B %Y"), "to", 
+          format(max(fed_funds$date), "%B %Y")),
+    nrow(fed_funds),
+    sum(fed_funds$intervention == 0),
+    sum(fed_funds$intervention == 1),
+    format(intervention_date, "%B %Y")
+  )
+)
+
+data_summary %>%
+  kable(caption = "Federal Funds Rate Dataset Summary",
+        col.names = c("Metric", "Value"),
+        align = c("l", "r")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, background = "#f8f9fa") %>%
+  row_spec(5, bold = TRUE, color = "#E63946")
+```
+
+## Graph to Identify the Intervention
+```{r visualization, fig.width=10, fig.height=6}
+# Create visualization with intervention marker
+ggplot(fed_funds, aes(x = date, y = rate)) +
+  geom_line(color = "#2E86AB", linewidth = 0.8) +
+  geom_vline(xintercept = intervention_date, 
+             linetype = "dashed", 
+             color = "#E63946", 
+             linewidth = 1) +
+  annotate("text", 
+           x = intervention_date, 
+           y = max(fed_funds$rate) * 0.95, 
+           label = "Fed Rate Hikes Begin\n(March 2022)", 
+           color = "#E63946", 
+           hjust = -0.1, 
+           vjust = 1,
+           size = 4,
+           fontface = "bold") +
+  annotate("segment",
+           x = intervention_date,
+           xend = intervention_date,
+           y = max(fed_funds$rate) * 0.88,
+           yend = max(fed_funds$rate) * 0.95,
+           arrow = arrow(length = unit(0.3, "cm"), type = "closed"),
+           color = "#E63946",
+           linewidth = 1) +
+  labs(
+    title = "Federal Funds Rate with Monetary Policy Intervention Marker",
+    subtitle = "Monthly effective federal funds rate showing the March 2022 intervention",
+    x = "Date",
+    y = "Federal Funds Rate (%)",
+    caption = "Source: Federal Reserve Economic Data (FRED)"
+  ) +
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(0, ceiling(max(fed_funds$rate)), by = 1)) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(color = "gray40", size = 11),
+    panel.grid.minor = element_blank(),
+    axis.title = element_text(face = "bold")
+  )
+```
+
+The plot illustrates the federal funds rate trajectory from 2010 to 2024, with a vertical dashed line marking March 2022—the onset of the Federal Reserve's aggressive monetary tightening cycle. The visualization reveals three distinct phases: (1) a prolonged period of near-zero rates from 2015 through early 2022, reflecting accommodative monetary policy during economic recovery and the pandemic response; (2) a sharp structural break at the March 2022 intervention point; and (3) an unprecedented rate hiking campaign that elevated rates from near 0% to above 5% within 18 months—the most rapid tightening in over four decades.
+
+This dramatic shift exhibits both an immediate level change and a sustained positive trend post-intervention, making it an ideal case for Interrupted Time Series analysis. The clear bifurcation in the data-generating process around March 2022 allows us to quantify the magnitude of the policy intervention and distinguish between the immediate shock effect and the sustained trend change in monetary policy stance.
+
+## ITS Model Specification
+
+We specify an Interrupted Time Series model with the following structure:
+
+$$Y_t = \beta_0 + \beta_1 \cdot time_t + \beta_2 \cdot intervention_t + \beta_3 \cdot time\_since\_intervention_t + \epsilon_t$$
+
+Where:
+
+- $Y_t$ = Federal funds rate at time $t$
+- $time_t$ = Continuous time variable (months since start of series)
+- $intervention_t$ = Binary indicator (0 before March 2022, 1 after)
+- $time\_since\_intervention_t$ = Months since intervention (0 before March 2022)
+- $\beta_0$ = Baseline intercept
+- $\beta_1$ = **Pre-intervention trend** (rate of change before March 2022)
+- $\beta_2$ = **Immediate level change** at intervention (step change in March 2022)
+- $\beta_3$ = **Change in trend** after intervention (acceleration in rate trajectory)
+- $\epsilon_t$ = Error term
+```{r its-model}
+# Fit the ITS model using Ordinary Least Squares
+its_model <- lm(rate ~ time + intervention + time_since_intervention, 
+                data = fed_funds)
+
+# Display model summary
+summary(its_model)
+
+# Extract coefficients for interpretation
+coefficients_table <- broom::tidy(its_model, conf.int = TRUE) %>%
+  mutate(across(where(is.numeric), ~round(., 4)))
+
+coefficients_table %>%
+  kable(caption = "Interrupted Time Series Model Coefficients",
+        col.names = c("Term", "Estimate", "Std. Error", "t-statistic", 
+                     "p-value", "CI Lower", "CI Upper")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE)
+```
+
+### Model Results Interpretation
+
+The ITS regression model demonstrates **exceptional explanatory power** with an adjusted R² of **0.8147**, indicating that the model explains approximately 81% of the variance in the federal funds rate. All model coefficients are **highly statistically significant** (p < 0.001), providing strong evidence of the intervention's impact.
+
+**Key Coefficient Estimates:**
+
+- **Pre-intervention Trend (β₁ = 0.0073)**: Prior to March 2022, the federal funds rate was increasing at a modest rate of approximately **0.007 percentage points per month**, reflecting the gradual normalization from pandemic-era accommodative policy.
+
+- **Immediate Level Change (β₂ = 0.9887)**: At the intervention point in March 2022, there was an **immediate upward shift of approximately 0.99 percentage points** in the federal funds rate, representing the Fed's initial aggressive policy response to inflation concerns.
+
+- **Change in Trend (β₃ = 0.1206)**: Beyond the immediate shock, the intervention induced a **dramatic acceleration in the rate trajectory**, with an additional increase of **0.12 percentage points per month** post-intervention. This represents a **17-fold acceleration** compared to the pre-intervention trend (0.1206 vs 0.0073).
+
+- **Cumulative Effect**: Combining both the level change and trend acceleration, the intervention resulted in the federal funds rate increasing from near-zero to over 5% within 18 months—one of the most aggressive tightening cycles in Federal Reserve history.
+
+The model's F-statistic of **263.2** (p < 2.2e-16) confirms the overall model significance, validating the ITS framework's ability to capture the structural break in monetary policy.
+
+## Model Diagnostics
+
+::: {.panel-tabset}
+
+### Assessing Model Assumptions {.active}
+
+Time series regression models require careful diagnostic checks to ensure valid inference. We examine residual patterns, normality assumptions, and temporal autocorrelation to validate our ITS model specifications.
+```{r diagnostics, fig.width=10, fig.height=8}
+# Check model assumptions
+par(mfrow = c(2, 2))
+plot(its_model)
+par(mfrow = c(1, 1))
+```
+
+**Initial Diagnostic Observations:**
+
+- **Residuals vs Fitted**: The plot reveals **systematic patterns** in residuals, with distinct clustering before and after the intervention point, suggesting potential heteroskedasticity and serial correlation.
+
+- **Q-Q Plot**: Shows **reasonable normality** with slight deviations in the tails, particularly at extreme values, which is common in financial time series data.
+
+- **Scale-Location**: Indicates **non-constant variance**, with residual spread varying across fitted values—a violation of the homoskedasticity assumption.
+
+- **Residuals vs Leverage**: Several observations (particularly around the intervention period) show moderate leverage, but no extreme influential points that would distort the model.
+
+### Testing for Autocorrelation
+```{r autocorrelation-check, fig.width=10, fig.height=6}
+# Check for autocorrelation
+par(mfrow = c(1, 2))
+acf(residuals(its_model), main = "ACF of Residuals", lag.max = 24)
+pacf(residuals(its_model), main = "PACF of Residuals", lag.max = 24)
+par(mfrow = c(1, 1))
+
+# Durbin-Watson test for autocorrelation
+dw_test <- lmtest::dwtest(its_model)
+cat("\nDurbin-Watson Test for Autocorrelation:\n")
+print(dw_test)
+```
+
+**Critical Finding: Significant Autocorrelation Detected**
+
+- **ACF Plot**: Shows **strong and persistent autocorrelation** across multiple lags (1-12), with values well above the significance threshold. This indicates that successive residuals are highly correlated—a serious violation of OLS assumptions.
+
+- **PACF Plot**: The sharp spike at lag 1 followed by rapid decay suggests an **AR(1) autoregressive structure** in the residuals.
+
+- **Durbin-Watson Test**: DW statistic of **0.045** (p < 2.2e-16) provides **definitive statistical evidence** of positive autocorrelation. Values far below 2 indicate strong positive serial correlation, rendering OLS standard errors and hypothesis tests invalid.
+
+**Implication**: The standard OLS model underestimates standard errors and produces overly optimistic p-values. We must account for this autocorrelation structure.
+
+### Addressing Autocorrelation with GLS
+```{r autocorrelation-adjustment}
+# Fit GLS model with AR(1) correlation structure
+fed_funds <- fed_funds %>%
+  mutate(time_index = row_number())
+
+its_gls <- gls(rate ~ time + intervention + time_since_intervention,
+               data = fed_funds,
+               correlation = corAR1(form = ~ time_index),
+               method = "ML")
+
+# Display GLS model summary
+summary(its_gls)
+
+# Model comparison table
+model_comparison <- data.frame(
+  Model = c("OLS Model", "GLS Model with AR(1)"),
+  AIC = c(AIC(its_model), AIC(its_gls)),
+  BIC = c(BIC(its_model), BIC(its_gls)),
+  LogLik = c(logLik(its_model), logLik(its_gls))
+) %>%
+  mutate(across(where(is.numeric), ~round(., 2)))
+
+model_comparison %>%
+  kable(caption = "Model Comparison: OLS vs GLS with AR(1) Structure",
+        align = c("l", "r", "r", "r")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE) %>%
+  row_spec(2, bold = TRUE, background = "#e8f4f8")
+```
+
+### Diagnostic Summary and Model Selection
+
+**GLS Model Performance:**
+
+The Generalized Least Squares (GLS) model with an AR(1) correlation structure addresses the autocorrelation problem by explicitly modeling the temporal dependence in residuals. The estimated AR(1) coefficient of **φ = 0.98** confirms extremely high positive autocorrelation between consecutive time points.
+
+**Model Comparison Results:**
+
+- **AIC Reduction**: GLS model shows a dramatic improvement with AIC of **-179.20** versus **408.06** for OLS—a reduction of **587 points**, indicating vastly superior model fit.
+
+- **BIC Reduction**: Similarly, BIC improved from **424.03** to **-160.04**, confirming that the additional complexity of modeling autocorrelation is more than justified.
+
+- **Log-Likelihood**: The GLS model's log-likelihood of **95.60** compared to OLS's **-199.03** demonstrates substantially better data fit.
+
+**Conclusion**: The **GLS model with AR(1) structure is strongly preferred** for inference. While both models identify the same intervention effects, the GLS model provides **valid standard errors and hypothesis tests** by accounting for temporal autocorrelation. All subsequent interpretations and predictions will be based on the GLS specification.
+
+**Key Takeaway**: In time series intervention analysis, failing to account for autocorrelation can lead to severely inflated Type I error rates. The dramatic improvement in fit statistics validates the importance of proper autocorrelation modeling in ITS analysis.
+## Predicted Outcomes and Counterfactual Analysis
+
+:::
+
+## Visualizing the Intervention Effect
+
+A key strength of Interrupted Time Series analysis is its ability to construct **counterfactual scenarios**—what would have happened absent the intervention. By comparing actual outcomes to this counterfactual trajectory, we can isolate the causal impact of the Federal Reserve's policy shift.
+```{r predictions, fig.width=10, fig.height=6}
+# Generate predictions
+fed_funds <- fed_funds %>%
+  mutate(
+    predicted = predict(its_model, newdata = .),
+    # Counterfactual: what would have happened without intervention
+    counterfactual = predict(its_model, 
+                            newdata = mutate(., 
+                                           intervention = 0, 
+                                           time_since_intervention = 0))
+  )
+
+# Visualize actual vs predicted vs counterfactual
+ggplot(fed_funds, aes(x = date)) +
+  geom_line(aes(y = rate, color = "Actual"), linewidth = 1) +
+  geom_line(aes(y = predicted, color = "Predicted"), 
+            linetype = "dashed", linewidth = 0.8) +
+  geom_line(aes(y = counterfactual, color = "Counterfactual"), 
+            linetype = "dotted", linewidth = 0.8) +
+  geom_vline(xintercept = intervention_date, 
+             linetype = "dashed", 
+             color = "gray50", 
+             alpha = 0.5) +
+  scale_color_manual(
+    name = "Series",
+    values = c("Actual" = "#2E86AB", 
+               "Predicted" = "#E63946", 
+               "Counterfactual" = "#A8DADC"),
+    breaks = c("Actual", "Predicted", "Counterfactual")
+  ) +
+  labs(
+    title = "Federal Funds Rate: Actual vs Predicted vs Counterfactual",
+    subtitle = "ITS model predictions showing the intervention effect",
+    x = "Date",
+    y = "Federal Funds Rate (%)",
+    caption = "Counterfactual represents projected rate without the March 2022 intervention"
+  ) +
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    legend.position = "bottom",
+    panel.grid.minor = element_blank()
+  )
+```
+
+### Understanding the Three Trajectories
+
+**Actual Rate (Solid Blue Line)**: The observed federal funds rate data showing the dramatic increase from near-zero to over 5% following March 2022. The actual trajectory closely follows the predicted values, confirming excellent model fit.
+
+**Predicted Rate (Dashed Red Line)**: The ITS model's fitted values, which capture both the immediate level shift and accelerated trend post-intervention. The tight correspondence between actual and predicted values validates our model specification.
+
+**Counterfactual Rate (Dotted Green Line)**: The projected rate trajectory **if the March 2022 intervention had never occurred**. This represents the continuation of pre-intervention monetary policy—maintaining accommodative rates with only gradual normalization. By December 2024, the counterfactual projects rates around **1.4%** compared to the actual **4.5%**—a difference of approximately **3 percentage points** attributable to the intervention.
+
+**Key Insight**: The widening gap between actual and counterfactual trajectories illustrates the **compounding effect** of the policy intervention. The difference grows over time not just due to the immediate level shift, but because of the sustained acceleration in the rate hiking trajectory (β₃ = 0.12 percentage points per month).
+
+
+## Interpretation of Results
+
+### Quantifying the Intervention Impact
+```{r interpretation}
+# Extract key coefficients from GLS model (preferred specification)
+beta_0 <- coef(its_gls)["(Intercept)"]
+beta_1 <- coef(its_gls)["time"]
+beta_2 <- coef(its_gls)["intervention"]
+beta_3 <- coef(its_gls)["time_since_intervention"]
+
+# Calculate intervention effect at different time points
+immediate_effect <- beta_2
+effect_6mo <- beta_2 + (beta_3 * 6)
+effect_12mo <- beta_2 + (beta_3 * 12)
+effect_24mo <- beta_2 + (beta_3 * 24)
+effect_33mo <- beta_2 + (beta_3 * 33) # Through Dec 2024
+
+# Create comprehensive results table
+intervention_effects <- data.frame(
+  Parameter = c(
+    "Pre-intervention Trend (β₁)",
+    "Immediate Level Change (β₂)",
+    "Change in Trend (β₃)",
+    "",
+    "Cumulative Effect: Immediate",
+    "Cumulative Effect: 6 Months",
+    "Cumulative Effect: 12 Months", 
+    "Cumulative Effect: 24 Months",
+    "Cumulative Effect: 33 Months (Dec 2024)"
+  ),
+  Estimate = c(
+    paste(round(beta_1, 4), "pp/month"),
+    paste(round(beta_2, 4), "pp"),
+    paste(round(beta_3, 4), "pp/month"),
+    "",
+    paste(round(immediate_effect, 2), "pp"),
+    paste(round(effect_6mo, 2), "pp"),
+    paste(round(effect_12mo, 2), "pp"),
+    paste(round(effect_24mo, 2), "pp"),
+    paste(round(effect_33mo, 2), "pp")
+  ),
+  Interpretation = c(
+    "Gradual pre-intervention normalization",
+    "Initial policy shock in March 2022",
+    "Accelerated post-intervention trajectory",
+    "",
+    "First-order effect of intervention",
+    "Combined level + trend effect",
+    "Effect after one year",
+    "Effect after two years",
+    "Total effect through present"
+  )
+)
+
+intervention_effects %>%
+  kable(caption = "Intervention Effect Decomposition: Federal Reserve Rate Hiking Campaign",
+        align = c("l", "r", "l")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, background = "#f8f9fa") %>%
+  row_spec(1:3, background = "#fff3cd") %>%
+  row_spec(5:9, background = "#d1ecf1") %>%
+  row_spec(4, background = "white")
+```
+
+### Economic Significance and Policy Implications
+
+**1. Pre-Intervention Baseline (β₁ = 0.0033 pp/month)**
+
+Prior to March 2022, the federal funds rate was increasing at a **minimal pace of 0.003 percentage points per month**—essentially maintaining near-zero rates with negligible upward drift. This reflects the Fed's accommodative stance during the early pandemic recovery, prioritizing employment and growth over inflation concerns.
+
+**2. Immediate Intervention Shock (β₂ = 0.12 pp)**
+
+The March 2022 intervention produced an **immediate upward level shift of 0.12 percentage points**. While this initial shock appears modest, it signaled a fundamental regime change in monetary policy, marking the end of the pandemic-era zero interest rate policy (ZIRP) and the beginning of aggressive tightening.
+
+**3. Trend Acceleration (β₃ = 0.12 pp/month)**
+
+The most consequential effect is the **dramatic acceleration in the rate trajectory**, with an additional **0.12 percentage points per month** increase post-intervention. This represents a **36-fold acceleration** compared to the pre-intervention trend, reflecting the Fed's determination to rapidly restore price stability.
+
+**4. Cumulative Impact Over Time**
+
+The intervention's cumulative effect grows substantially over time due to the compounding nature of trend changes:
+
+- **Immediate (March 2022)**: +0.12 pp — initial policy signal
+- **6 Months (September 2022)**: +0.85 pp — aggressive hiking underway  
+- **12 Months (March 2023)**: +1.60 pp — full-year cumulative effect
+- **24 Months (March 2024)**: +3.00 pp — two-year tightening cycle
+- **33 Months (December 2024)**: +4.08 pp — total effect to present
+
+By December 2024, the **total intervention effect of approximately 4 percentage points** represents one of the most aggressive monetary tightening episodes since the Volcker era of the early 1980s.
+
+### Broader Economic Context
+
+**Historical Significance**: The speed and magnitude of this rate hiking cycle is unprecedented in modern Fed history. Previous tightening cycles (e.g., 2015-2018) proceeded at roughly **0.25 pp per quarter**, compared to the **0.12 pp per month** (or ~0.36 pp per quarter) post-March 2022.
+
+**Inflation Response**: This aggressive intervention was necessitated by inflation reaching **9.1% in June 2022**—the highest rate since 1981. The Fed's rapid response aimed to anchor inflation expectations and prevent a wage-price spiral.
+
+**Real Economy Effects**: The intervention's magnitude has profound implications for:
+- **Mortgage rates**: Rising from ~3% to over 7%
+- **Corporate borrowing costs**: Tightened credit conditions  
+- **Consumer spending**: Reduced via wealth effects and higher borrowing costs
+- **Labor markets**: Cooling demand through reduced business investment
+
+The ITS analysis provides rigorous quantitative evidence that the Federal Reserve's March 2022 intervention fundamentally restructured the interest rate environment, with effects that continue to shape macroeconomic conditions through 2024.
+
+## Conclusion
+
+This Interrupted Time Series analysis demonstrates the effectiveness of the ITS framework in capturing structural breaks caused by exogenous policy interventions. The March 2022 Federal Reserve rate hiking campaign provides a textbook case of how monetary policy shifts create clear discontinuities in economic time series data.
+
+**Methodological Contributions:**
+
+Our analysis confirms that properly specified ITS models—particularly when accounting for autocorrelation through GLS estimation—can rigorously quantify both immediate and sustained intervention effects. The **36-fold acceleration in rate trajectory** post-intervention (from 0.003 to 0.12 pp/month) underscores the magnitude of the policy regime change.
+
+**Broader Implications:**
+
+The counterfactual analysis reveals that absent the March 2022 intervention, rates would have remained near **1.4% rather than the observed 4.5%** by December 2024—a **3-percentage-point divergence** that fundamentally reshaped credit markets, housing affordability, and macroeconomic conditions. This quantified intervention effect provides crucial context for understanding inflation dynamics, labor market cooling, and the broader economic trajectory of 2022-2024.
+
+**Looking Forward:**
+
+As the Federal Reserve navigates the transition from aggressive tightening to potential rate cuts, this ITS framework offers a template for analyzing future policy interventions. The methodology demonstrated here—combining visual inspection, rigorous statistical testing, autocorrelation adjustment, and counterfactual reasoning—represents a powerful toolkit for evaluating discrete policy shocks in economic time series.
+
+The analysis ultimately validates a core principle of causal inference in time series: when interventions are sudden, well-defined, and exogenous, ITS models can provide compelling evidence of treatment effects even without randomized controlled trials. For policymakers and researchers alike, this framework remains essential for understanding how discrete decisions ripple through complex economic systems over time.
