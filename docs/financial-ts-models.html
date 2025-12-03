@@ -463,7 +463,7 @@ window.Quarto = {
 </tr>
 <tr class="even">
 <td style="text-align: left;">Mean Return (%)</td>
-<td style="text-align: right;">0.0116</td>
+<td style="text-align: right;">0.0115</td>
 <td style="text-align: left;">Near-zero mean typical for financial returns</td>
 </tr>
 <tr class="odd">
@@ -777,21 +777,21 @@ Figure&nbsp;1: TIP returns exhibit volatility clustering, particularly visible i
 <tr class="odd">
 <td style="text-align: left;">Ljung-Box (Returns)</td>
 <td style="text-align: left;">Serial correlation in mean</td>
-<td style="text-align: right;">69.0177</td>
-<td style="text-align: left;">6.859e-11</td>
+<td style="text-align: right;">69.0204</td>
+<td style="text-align: left;">6.851e-11</td>
 <td style="text-align: left;">Serial correlation detected</td>
 </tr>
 <tr class="even">
 <td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">Ljung-Box (Squared Returns)</td>
 <td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">Volatility clustering (ARCH effects)</td>
-<td style="text-align: right; background-color: rgba(212, 237, 218, 255) !important;">2074.7874</td>
+<td style="text-align: right; background-color: rgba(212, 237, 218, 255) !important;">2074.7552</td>
 <td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">&lt; 2.2e-16</td>
 <td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">ARCH effects present ✓</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">ARCH-LM Test</td>
 <td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">Formal test for ARCH effects</td>
-<td style="text-align: right; background-color: rgba(212, 237, 218, 255) !important;">931.7215</td>
+<td style="text-align: right; background-color: rgba(212, 237, 218, 255) !important;">931.7109</td>
 <td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">&lt; 2.2e-16</td>
 <td style="text-align: left; background-color: rgba(212, 237, 218, 255) !important;">ARCH effects confirmed ✓</td>
 </tr>
@@ -999,27 +999,27 @@ Figure&nbsp;2: ACF and PACF of squared returns show significant autocorrelation,
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">ARMA(3,2) + GARCH(1,1)</td>
-<td style="text-align: right;">0.5139</td>
+<td style="text-align: right;">0.5140</td>
 <td style="text-align: right;">0.5297</td>
-<td style="text-align: right;">-1015.839</td>
+<td style="text-align: right;">-1015.846</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">ARMA(3,2) + GARCH(1,2)</td>
 <td style="text-align: right;">0.5133</td>
-<td style="text-align: right;">0.5306</td>
-<td style="text-align: right;">-1013.569</td>
+<td style="text-align: right;">0.5307</td>
+<td style="text-align: right;">-1013.576</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">ARMA(3,2) + GARCH(2,1)</td>
-<td style="text-align: right;">0.5144</td>
+<td style="text-align: right;">0.5145</td>
 <td style="text-align: right;">0.5318</td>
-<td style="text-align: right;">-1015.839</td>
+<td style="text-align: right;">-1015.846</td>
 </tr>
 <tr class="even">
 <td style="text-align: left; font-weight: bold; background-color: rgba(209, 236, 241, 255) !important;">ARMA(3,2) + GARCH(2,2)</td>
-<td style="text-align: right; font-weight: bold; background-color: rgba(209, 236, 241, 255) !important;">0.5119</td>
-<td style="text-align: right; font-weight: bold; background-color: rgba(209, 236, 241, 255) !important;">0.5308</td>
-<td style="text-align: right; font-weight: bold; background-color: rgba(209, 236, 241, 255) !important;">-1009.759</td>
+<td style="text-align: right; font-weight: bold; background-color: rgba(209, 236, 241, 255) !important;">0.5123</td>
+<td style="text-align: right; font-weight: bold; background-color: rgba(209, 236, 241, 255) !important;">0.5312</td>
+<td style="text-align: right; font-weight: bold; background-color: rgba(209, 236, 241, 255) !important;">-1010.459</td>
 </tr>
 </tbody>
 </table>
@@ -1119,28 +1119,28 @@ Figure&nbsp;2: ACF and PACF of squared returns show significant autocorrelation,
 <tr class="odd">
 <td style="text-align: left;">Ljung-Box (Std. Residuals)</td>
 <td style="text-align: left;">No serial correlation</td>
-<td style="text-align: right;">9.0093</td>
-<td style="text-align: left;">0.1087</td>
+<td style="text-align: right;">10.2685</td>
+<td style="text-align: left;">0.06798</td>
 <td style="text-align: left; font-weight: bold;">✓ PASS</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Ljung-Box (Squared Std. Residuals)</td>
 <td style="text-align: left;">No remaining ARCH effects</td>
-<td style="text-align: right;">19.1707</td>
-<td style="text-align: left;">0.003885</td>
+<td style="text-align: right;">18.9843</td>
+<td style="text-align: left;">0.00419</td>
 <td style="text-align: left; font-weight: bold;">✗ FAIL</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">ARCH-LM (Std. Residuals)</td>
 <td style="text-align: left;">No ARCH effects</td>
-<td style="text-align: right;">18.3044</td>
-<td style="text-align: left;">0.05004</td>
+<td style="text-align: right;">18.1153</td>
+<td style="text-align: left;">0.05305</td>
 <td style="text-align: left; font-weight: bold;">✓ PASS</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Jarque-Bera (Normality)</td>
 <td style="text-align: left;">Residuals are normal</td>
-<td style="text-align: right;">226.1324</td>
+<td style="text-align: right;">223.1532</td>
 <td style="text-align: left;">&lt; 2.2e-16</td>
 <td style="text-align: left; font-weight: bold;">✗ FAIL</td>
 </tr>
@@ -1185,7 +1185,7 @@ Figure&nbsp;2: ACF and PACF of squared returns show significant autocorrelation,
 <img src="financial-ts-models_files/figure-html/fig-diagnostics-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diagnostics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: Diagnostic plots of standardized residuals. Well-behaved residuals should show no patterns, normal distribution, and no autocorrelation.
+Figure&nbsp;3: Diagnostic plots of standardized residuals.
 </figcaption>
 </figure>
 </div>
@@ -1235,7 +1235,7 @@ Figure&nbsp;3: Diagnostic plots of standardized residuals. Well-behaved residual
 <p><strong>Interpretation:</strong></p>
 <ul>
 <li>The <strong>Ljung–Box test</strong> applied to the standardized residuals produces a p-value greater than 0.05, indicating no remaining linear serial correlation. However, the Ljung–Box test on the squared standardized residuals yields a p-value below 0.05, suggesting that some higher-order nonlinear dependence (i.e., residual ARCH effects) persists even after fitting the GARCH model. This implies that, while the ARMA–GARCH specification captures the bulk of the volatility clustering, a small fraction of conditional heteroskedasticity remains unexplained, which is common in empirical financial time series. More flexible volatility models (e.g., EGARCH or long-memory GARCH) could potentially address this residual dependence</li>
-<li>ACF plots show <strong>no significant spikes</strong> → Residuals are white noise</li>
+<li>ACF plots show <strong>no significant spikes</strong> → Residuals are white noise in the mean (but actually not fully in variance)</li>
 </ul>
 <p><strong>Note on Normality:</strong></p>
 <p>The model was initially estimated under the assumption of conditionally normally distributed innovations. Under this specification, the Jarque–Bera test strongly rejected normality, confirming the presence of excess kurtosis and heavy tails in the return distribution. This result motivated re-estimating the model using a Student-t error distribution.</p>
@@ -1288,87 +1288,87 @@ Figure&nbsp;3: Diagnostic plots of standardized residuals. Well-behaved residual
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">mu</td>
-<td style="text-align: right;">0.016797</td>
-<td style="text-align: right;">0.003620</td>
-<td style="text-align: right;">4.639722</td>
-<td style="text-align: left;">3.489e-06</td>
+<td style="text-align: right;">0.016820</td>
+<td style="text-align: right;">0.003662</td>
+<td style="text-align: right;">4.592712</td>
+<td style="text-align: left;">4.375e-06</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">ar1</td>
-<td style="text-align: right;">0.864217</td>
-<td style="text-align: right;">0.367233</td>
-<td style="text-align: right;">2.353323</td>
-<td style="text-align: left;">0.01861</td>
+<td style="text-align: right;">-0.061537</td>
+<td style="text-align: right;">0.347140</td>
+<td style="text-align: right;">-0.177269</td>
+<td style="text-align: left;">0.85930</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">ar2</td>
-<td style="text-align: right;">-0.041858</td>
-<td style="text-align: right;">0.299030</td>
-<td style="text-align: right;">-0.139980</td>
-<td style="text-align: left;">0.88868</td>
+<td style="text-align: right;">0.673915</td>
+<td style="text-align: right;">0.291383</td>
+<td style="text-align: right;">2.312812</td>
+<td style="text-align: left;">0.02073</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">ar3</td>
-<td style="text-align: right;">0.021711</td>
-<td style="text-align: right;">0.020596</td>
-<td style="text-align: right;">1.054169</td>
-<td style="text-align: left;">0.29181</td>
+<td style="text-align: right;">-0.025701</td>
+<td style="text-align: right;">0.019409</td>
+<td style="text-align: right;">-1.324150</td>
+<td style="text-align: left;">0.18545</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">ma1</td>
-<td style="text-align: right;">-0.873008</td>
-<td style="text-align: right;">0.366941</td>
-<td style="text-align: right;">-2.379153</td>
-<td style="text-align: left;">0.01735</td>
+<td style="text-align: right;">0.051354</td>
+<td style="text-align: right;">0.345860</td>
+<td style="text-align: right;">0.148483</td>
+<td style="text-align: left;">0.88196</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">ma2</td>
-<td style="text-align: right;">0.001060</td>
-<td style="text-align: right;">0.301653</td>
-<td style="text-align: right;">0.003513</td>
-<td style="text-align: left;">0.99720</td>
+<td style="text-align: right;">-0.708165</td>
+<td style="text-align: right;">0.292961</td>
+<td style="text-align: right;">-2.417263</td>
+<td style="text-align: left;">0.01564</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">omega</td>
-<td style="text-align: right;">0.004547</td>
-<td style="text-align: right;">0.001158</td>
-<td style="text-align: right;">3.927918</td>
-<td style="text-align: left;">8.568e-05</td>
+<td style="text-align: right;">0.004495</td>
+<td style="text-align: right;">0.001146</td>
+<td style="text-align: right;">3.923822</td>
+<td style="text-align: left;">8.716e-05</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">alpha1</td>
-<td style="text-align: right;">0.104231</td>
-<td style="text-align: right;">0.014546</td>
-<td style="text-align: right;">7.165548</td>
-<td style="text-align: left;">7.747e-13</td>
+<td style="text-align: right;">0.104769</td>
+<td style="text-align: right;">0.014555</td>
+<td style="text-align: right;">7.198380</td>
+<td style="text-align: left;">6.093e-13</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">alpha2</td>
-<td style="text-align: right;">0.042853</td>
-<td style="text-align: right;">0.017155</td>
-<td style="text-align: right;">2.498050</td>
-<td style="text-align: left;">0.01249</td>
+<td style="text-align: right;">0.042394</td>
+<td style="text-align: right;">0.017183</td>
+<td style="text-align: right;">2.467248</td>
+<td style="text-align: left;">0.01362</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">beta1</td>
 <td style="text-align: right;">0.000000</td>
-<td style="text-align: right;">0.059581</td>
+<td style="text-align: right;">0.059822</td>
 <td style="text-align: right;">0.000000</td>
 <td style="text-align: left;">1.00000</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">beta2</td>
-<td style="text-align: right;">0.813930</td>
-<td style="text-align: right;">0.052306</td>
-<td style="text-align: right;">15.561050</td>
+<td style="text-align: right;">0.814404</td>
+<td style="text-align: right;">0.052533</td>
+<td style="text-align: right;">15.502624</td>
 <td style="text-align: left;">&lt; 2.2e-16</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">shape</td>
-<td style="text-align: right;">8.806771</td>
-<td style="text-align: right;">1.100397</td>
-<td style="text-align: right;">8.003266</td>
-<td style="text-align: left;">1.110e-15</td>
+<td style="text-align: right;">8.866445</td>
+<td style="text-align: right;">1.114057</td>
+<td style="text-align: right;">7.958696</td>
+<td style="text-align: left;">1.776e-15</td>
 </tr>
 </tbody>
 </table>
@@ -1394,21 +1394,21 @@ r_t = \mu + \phi_1 r_{t-1} + \phi_2 r_{t-2} + \phi_3 r_{t-3} + \theta_1 \varepsi
 <p><strong>Mean Equation:</strong></p>
 <p><span class="math display">\[
 \begin{aligned}
-r_t &amp;= 0.016797 \\
-    &amp;\quad + 0.864217 r_{t-1} + -0.041858 r_{t-2} + 0.021711 r_{t-3} \\
-    &amp;\quad + -0.873008 \varepsilon_{t-1} + 0.001060 \varepsilon_{t-2} + \varepsilon_t
+r_t &amp;= 0.016820 \\
+    &amp;\quad + -0.061537 r_{t-1} + 0.673915 r_{t-2} + -0.025701 r_{t-3} \\
+    &amp;\quad + 0.051354 \varepsilon_{t-1} + -0.708165 \varepsilon_{t-2} + \varepsilon_t
 \end{aligned}
 \]</span></p>
 <p><strong>Variance Equation (GARCH(2,2)):</strong></p>
 <p><span class="math display">\[
 \begin{aligned}
-\sigma_t^2 &amp;= 0.00454665 \\
-           &amp;\quad + 0.104231 \varepsilon_{t-1}^2 + 0.042853 \varepsilon_{t-2}^2 \\
-           &amp;\quad + 0.000000 \sigma_{t-1}^2 + 0.813930 \sigma_{t-2}^2
+\sigma_t^2 &amp;= 0.00449485 \\
+           &amp;\quad + 0.104769 \varepsilon_{t-1}^2 + 0.042394 \varepsilon_{t-2}^2 \\
+           &amp;\quad + 0.000000 \sigma_{t-1}^2 + 0.814404 \sigma_{t-2}^2
 \end{aligned}
 \]</span></p>
 <p><strong>Distribution:</strong></p>
-<p><span class="math inline">\(z_t \sim t_{8.81}\)</span> with 8.81 degrees of freedom, indicating <strong>very fat tails</strong>.</p>
+<p><span class="math inline">\(z_t \sim t_{8.87}\)</span> with 8.87 degrees of freedom, indicating <strong>very fat tails</strong>.</p>
 </section>
 <section id="persistence-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="persistence-analysis">Persistence Analysis</h3>
@@ -1461,22 +1461,22 @@ r_t &amp;= 0.016797 \\
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">α (ARCH coefficient sum)</td>
-<td style="text-align: left;">0.147084</td>
+<td style="text-align: left;">0.147164</td>
 <td style="text-align: left;">Sensitivity to recent shocks</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">β (GARCH coefficient sum)</td>
-<td style="text-align: left;">0.813930</td>
+<td style="text-align: left;">0.814404</td>
 <td style="text-align: left;">Memory of past volatility</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left; background-color: rgba(255, 243, 205, 255) !important;">Persistence (α + β)</td>
-<td style="text-align: left; background-color: rgba(255, 243, 205, 255) !important;">0.961014</td>
+<td style="text-align: left; background-color: rgba(255, 243, 205, 255) !important;">0.961567</td>
 <td style="text-align: left; background-color: rgba(255, 243, 205, 255) !important;">Stationary volatility</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Half-life of shocks (days)</td>
-<td style="text-align: left;">17.43</td>
+<td style="text-align: left;">17.69</td>
 <td style="text-align: left;">Time for shock to decay to 50% of initial magnitude</td>
 </tr>
 </tbody>
@@ -1493,17 +1493,17 @@ r_t &amp;= 0.016797 \\
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><strong>Persistence = α + β = 0.9610</strong></p>
+<p><strong>Persistence = α + β = 0.9616</strong></p>
 <p>This value measures how long volatility shocks last:</p>
 <ul>
 <li><strong>If α + β &lt; 1</strong>: Volatility is stationary—shocks decay over time</li>
 <li><strong>If α + β ≈ 1</strong>: Volatility is highly persistent (IGARCH)—shocks last a very long time</li>
 <li><strong>If α + β &gt; 1</strong>: Model is explosive (unstable)—not economically plausible</li>
 </ul>
-<p><strong>Half-life = 17.4 days</strong></p>
-<p>This means that a volatility shock takes approximately <strong>17 days</strong> (about 3 weeks) to decay to half its initial magnitude.</p>
+<p><strong>Half-life = 17.7 days</strong></p>
+<p>This means that a volatility shock takes approximately <strong>18 days</strong> (about 4 weeks) to decay to half its initial magnitude.</p>
 <p><strong>Economic Context:</strong></p>
-<p>When the Fed announces an unexpected rate hike or CPI data surprises markets, TIP volatility spikes. Our model shows this elevated volatility persists for roughly <strong>17 trading days</strong> before returning to baseline. For households monitoring 401k balances, this means periods of heightened portfolio fluctuation lasting about <strong>3 weeks</strong> after major inflation news.</p>
+<p>When the Fed announces an unexpected rate hike or CPI data surprises markets, TIP volatility spikes. Our model shows this elevated volatility persists for roughly <strong>18 trading days</strong> before returning to baseline. For households monitoring 401k balances, this means periods of heightened portfolio fluctuation lasting about <strong>4 weeks</strong> after major inflation news.</p>
 </div>
 </div>
 <hr>
@@ -1562,9 +1562,9 @@ Figure&nbsp;4: Conditional volatility over time. Spikes in 2020 (COVID) and 2022
 </section>
 <section id="persistence-of-uncertainty" class="level4">
 <h4 class="anchored" data-anchor-id="persistence-of-uncertainty">2. <strong>Persistence of Uncertainty</strong></h4>
-<p><strong>Half-life = 17 days</strong> means:</p>
+<p><strong>Half-life = 18 days</strong> means:</p>
 <ul>
-<li>A single inflation shock (e.g., Fed rate announcement) affects portfolio volatility for <strong>3 weeks</strong></li>
+<li>A single inflation shock (e.g., Fed rate announcement) affects portfolio volatility for <strong>4 weeks</strong></li>
 <li>This complements our earlier finding that <strong>food price shocks persist for 4-5 months</strong></li>
 <li><strong>Dual impact</strong>: Households face both rising food costs AND portfolio instability for extended periods</li>
 </ul>
@@ -1588,7 +1588,7 @@ Figure&nbsp;4: Conditional volatility over time. Spikes in 2020 (COVID) and 2022
 <tr class="odd">
 <td><strong>Shock Persistence</strong></td>
 <td>4-5 months (MA(5))</td>
-<td>17 days ≈ 1 months</td>
+<td>18 days ≈ 1 months</td>
 </tr>
 <tr class="even">
 <td><strong>Leading Indicator</strong></td>
@@ -1598,7 +1598,7 @@ Figure&nbsp;4: Conditional volatility over time. Spikes in 2020 (COVID) and 2022
 <tr class="odd">
 <td><strong>Impact Magnitude</strong></td>
 <td>Milk +$1 → Food Home +6.99 points</td>
-<td>Inflation shock → volatility persists 17 days</td>
+<td>Inflation shock → volatility persists 18 days</td>
 </tr>
 <tr class="even">
 <td><strong>Household Effect</strong></td>
@@ -1611,7 +1611,7 @@ Figure&nbsp;4: Conditional volatility over time. Spikes in 2020 (COVID) and 2022
 <p>Inflation impacts American households through <strong>two channels</strong>:</p>
 <ol type="1">
 <li><strong>Direct spending</strong>: Food costs rise and stay elevated for 4-5 months</li>
-<li><strong>Indirect wealth effects</strong>: Portfolio volatility increases and persists for 17 days after each shock</li>
+<li><strong>Indirect wealth effects</strong>: Portfolio volatility increases and persists for 18 days after each shock</li>
 </ol>
 <p>The combination creates compounding stress: families face both <strong>higher prices</strong> at the grocery store AND <strong>unstable retirement savings</strong> for overlapping periods.</p>
 </section>
@@ -1621,14 +1621,14 @@ Figure&nbsp;4: Conditional volatility over time. Spikes in 2020 (COVID) and 2022
 <ul>
 <li>Inflation uncertainty (measured by TIPS volatility) affects household wealth beyond just CPI</li>
 <li>Gradual, predictable policy changes minimize volatility clustering</li>
-<li>Surprise rate hikes → volatility spikes lasting 17 days → household anxiety</li>
+<li>Surprise rate hikes → volatility spikes lasting 18 days → household anxiety</li>
 </ul>
 <p><strong>For Financial Advisors:</strong></p>
 <ul>
 <li>During high inflation (like 2022), recommend clients:
 <ul>
 <li>Avoid checking 401k balances daily (heightened volatility is temporary)</li>
-<li>Expect volatility to persist for 3 weeks after inflation news</li>
+<li>Expect volatility to persist for 4 weeks after inflation news</li>
 <li>TIPS provide long-run inflation protection despite short-run volatility</li>
 </ul></li>
 </ul>
@@ -1663,9 +1663,9 @@ Figure&nbsp;4: Conditional volatility over time. Spikes in 2020 (COVID) and 2022
 <li>Some residual ARCH effects remain at higher lags, suggesting that more complex volatility dynamics could be explored in future work</li>
 <li>Residuals exhibit fat tails, consistent with heavy-tailed financial returns</li>
 </ul></li>
-<li><strong>High Persistence: α + β = 0.9610</strong>
+<li><strong>High Persistence: α + β = 0.9616</strong>
 <ul>
-<li>Volatility shocks decay slowly (half-life = 17 days)</li>
+<li>Volatility shocks decay slowly (half-life = 18 days)</li>
 <li>Similar to food price shock persistence (4-5 months in ARIMAX model)</li>
 <li>Inflation uncertainty has long-lasting effects</li>
 </ul></li>
@@ -1723,9 +1723,9 @@ Table&nbsp;1: Synthesis of Inflation Impacts Across Dimensions
 <tr class="even">
 <td style="text-align: left;">Financial Markets (TIPS)</td>
 <td style="text-align: left;">GARCH</td>
-<td style="text-align: left;">Volatility persists 17 days after shocks</td>
-<td style="text-align: left;">17 days (GARCH persistence)</td>
-<td style="text-align: left;">Wealth: High 401k volatility for 3 weeks</td>
+<td style="text-align: left;">Volatility persists 18 days after shocks</td>
+<td style="text-align: left;">18 days (GARCH persistence)</td>
+<td style="text-align: left;">Wealth: High 401k volatility for 4 weeks</td>
 </tr>
 </tbody>
 </table>
@@ -1741,7 +1741,7 @@ Table&nbsp;1: Synthesis of Inflation Impacts Across Dimensions
 <ul>
 <li><strong>Consumption channel</strong>: Food costs rise 3-5% annually, with milk and beef as key drivers</li>
 <li><strong>Substitution channel</strong>: Weak—consumers don’t shift from restaurants to home cooking despite price differentials</li>
-<li><strong>Wealth channel (NEW)</strong>: Financial portfolios experience heightened volatility for 17 days after each inflation shock</li>
+<li><strong>Wealth channel (NEW)</strong>: Financial portfolios experience heightened volatility for 18 days after each inflation shock</li>
 <li><strong>Compounding effects</strong>: Rising prices and portfolio instability occur simultaneously, creating dual financial stress</li>
 </ul>
 <p><strong>The 2022 inflation episode provides a case study:</strong></p>
@@ -1755,7 +1755,7 @@ Table&nbsp;1: Synthesis of Inflation Impacts Across Dimensions
 <p><strong>Policy Takeaway:</strong></p>
 <p>Effective inflation management requires addressing not just price levels (Fed’s 2% CPI target) but also:</p>
 <ul>
-<li><strong>Volatility of expectations</strong> (GARCH persistence shows shocks last 17 days)</li>
+<li><strong>Volatility of expectations</strong> (GARCH persistence shows shocks last 18 days)</li>
 <li><strong>Sectoral disparities</strong> (restaurant inflation &gt; grocery inflation)</li>
 <li><strong>Wealth effects</strong> (portfolio volatility compounds consumption stress)</li>
 </ul>
