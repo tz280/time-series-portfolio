@@ -85,35 +85,46 @@ Household and firm **inflation expectations** influence near-term price dynamics
 
 # Guiding Questions
 
-1. How quickly and by how much do headline/core inflation shocks pass through to food, shelter, utilities, transportation, and services?
+Our analysis is organized around ten core questions that bridge technical findings to household realities:
 
-2. Which input costs (energy, wages, import prices) explain the largest share of category inflation, and how do their lags differ?
+## Monetary Policy & Intervention Effects
 
-3. Are food-at-home and food-away-from-home equally sensitive to inflation shocks?
+1. **Can aggressive interest rate hikes reverse food price increases that already occurred?**  
+   *Explores the fundamental asymmetry between preventing new inflation vs. undoing past price level changes*
 
-4. What is the lag between market rent indexes (Zillow/Apartment List) and CPI shelter?
+2. **How long does it take for Fed rate changes to affect different parts of the economy?**  
+   *Contrasts immediate financial market responses with lagged food price transmission and persistent effects*
 
-5. Do oil/gas shocks translate asymmetrically to gasoline/utilities (up faster than down)?
+## Food Price Behavior & Household Budgets
 
-6. How do seasonality and weather (HDD/CDD) shape utility bills over time?
+3. **Why don't food prices fall back down when overall inflation "cools"?**  
+   *Investigates the ratchet effect, autocorrelation patterns, and supply-side vs demand-side drivers*
 
-7. Where are regional disparities largest, and do they widen in high-inflation regimes?
+4. **Can families escape rising grocery costs by eating at restaurants more (or vice versa)?**  
+   *Tests substitution hypothesis using VAR causality analysis and differential inflation rates*
 
-8. Did pass-through elasticities change before vs after COVID-19?
+5. **Which specific foods drive overall grocery inflation—and can tracking them provide early warning?**  
+   *Examines ARIMAX coefficient magnitudes (milk β=6.99) and Granger causality for leading indicators*
 
-9. What 12-month scenarios (energy high/low; core steady/declining) imply for household bills?
+## Financial Markets & Wealth Effects
 
-10. Which categories most drive perceived inflation and budget burden for typical households?
+6. **Do inflation-protected investments actually protect during high inflation periods?**  
+   *Reveals the TIPS volatility paradox through GARCH persistence parameters*
 
-11. Do consumer inflation expectations help forecast category costs beyond standard drivers?
+7. **How long does financial market instability last after each inflation shock?**  
+   *Calculates half-lives and persistence from GARCH models to quantify sustained uncertainty*
 
-12. Which categories show the strongest/weakest reversion after large shocks?
+## Integration & Compound Effects
 
-13. How does import price inflation affect domestic retail prices across goods vs services?
+8. **When do the three burdens hit simultaneously vs. sequentially?**  
+   *Analyzes temporal overlap using lag structures from all three model families*
 
-14. Are there structural breaks aligned with major policy episodes (e.g., rapid tightening 2022–2023)?
+9. **Is the 2022 inflation experience a temporary crisis or a permanent shift to a "new normal"?**  
+   *Combines trend decomposition, structural break tests, and 12-month forecasts*
 
-15. Which category offers the best nowcast signal for next month's CPI?
+10. **What does "successful" inflation control look like from a household perspective vs. a central bank perspective?**  
+    *Contrasts CPI headline success (9.1%→3%) with persistent household burdens (40% food baseline, 18-day volatility)*
+
 
 ---
 
