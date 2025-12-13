@@ -27,7 +27,7 @@ website:
       - href: deep-learning-ts.qmd
         text: Deep Learning for TS
       - href: other-methods.qmd
-        text: "Other: Interrupted TS/ARFIMA/Spectral Analysis"
+        text: Other-Interrupted TS/ARFIMA/Spectral Analysis
       - href: conclusions.qmd
         text: Conclusions
 

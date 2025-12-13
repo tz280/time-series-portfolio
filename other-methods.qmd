@@ -5,13 +5,12 @@ format:
     toc: true
     toc-depth: 4
     link-external-newwindow: true
-    theme: cosmo
-    code-fold: true
-    code-summary: "Show Code"
+code-fold: true
+code-summary: "Show Code"
 execute:
   warning: false
   message: false
-editor: source
+editor : source
 ---
 
 ## Introduction
